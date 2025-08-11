@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "name": "AlphaTech Pvt Ltd",
+    "website": "https://alphatech.com",
+    "senderid": "ALPHAT",
+    "smsuser": "alpha_user",
+    "smspwd": "alpha123",
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "name": "BetaSoft Solutions",
+    "website": "https://betasoft.io",
+    "senderid": "BETASO",
+    "smsuser": "beta_user",
+    "smspwd": "beta123",
+    "status": "de-active"
+  },
+  {
+    "id": 3,
+    "name": "Gamma Innovations",
+    "website": "https://gammainnovate.com",
+    "senderid": "GAMMAI",
+    "smsuser": "gamma_user",
+    "smspwd": "gamma123",
+    "status": "de-active"
+  },
+  {
+    "id": 4,
+    "name": "DeltaCom Tech",
+    "website": "https://deltacomtech.com",
+    "senderid": "DELTAC",
+    "smsuser": "delta_user",
+    "smspwd": "delta123",
+    "status": "active"
+  },
+  {
+    "id": 5,
+    "name": "Epsilon Enterprises",
+    "website": "https://epsilonent.com",
+    "senderid": "EPSILO",
+    "smsuser": "epsilon_user",
+    "smspwd": "epsilon123",
+    "status": "active"
+  },
+  {
+    "id": 6,
+    "name": "Zeta Technologies",
+    "website": "https://zetatech.io",
+    "senderid": "ZETATE",
+    "smsuser": "zeta_user",
+    "smspwd": "zeta123",
+    "status": "de-active"
+  },
+  {
+    "id": 7,
+    "name": "EtaCloud Services",
+    "website": "https://etacloud.net",
+    "senderid": "ETACLD",
+    "smsuser": "eta_user",
+    "smspwd": "eta123",
+    "status": "active"
+  },
+  {
+    "id": 8,
+    "name": "Theta Systems",
+    "website": "https://thetasys.com",
+    "senderid": "THETAS",
+    "smsuser": "theta_user",
+    "smspwd": "theta123",
+    "status": "de-active"
+  },
+  {
+    "id": 9,
+    "name": "Iota Digital",
+    "website": "https://iotadigital.org",
+    "senderid": "IOTADI",
+    "smsuser": "iota_user",
+    "smspwd": "iota123",
+    "status": "active"
+  },
+  {
+    "id": 10,
+    "name": "Kappa Networks",
+    "website": "https://kappanet.com",
+    "senderid": "KAPPAN",
+    "smsuser": "kappa_user",
+    "smspwd": "kappa123",
+    "status": "de-active"
+  },
+  {
+    "id": 11,
+    "name": "Lambda Infotech",
+    "website": "https://lambdainfotech.com",
+    "senderid": "LAMINF",
+    "smsuser": "lambda_user",
+    "smspwd": "lambda123",
+    "status": "active"
+  },
+  {
+    "id": 12,
+    "name": "Mu Technologies",
+    "website": "https://mutech.io",
+    "senderid": "MUTECH",
+    "smsuser": "mu_user",
+    "smspwd": "mu123",
+    "status": "de-active"
+  },
+  {
+    "id": 13,
+    "name": "NuCom Services",
+    "website": "https://nucomservices.com",
+    "senderid": "NUCOMM",
+    "smsuser": "nu_user",
+    "smspwd": "nu123",
+    "status": "active"
+  },
+  {
+    "id": 14,
+    "name": "Xi Media Pvt Ltd",
+    "website": "https://ximedia.net",
+    "senderid": "XIMEDA",
+    "smsuser": "xi_user",
+    "smspwd": "xi123",
+    "status": "active"
+  },
+  {
+    "id": 15,
+    "name": "Omicron Labs",
+    "website": "https://omicronlabs.com",
+    "senderid": "OMILAB",
+    "smsuser": "omicron_user",
+    "smspwd": "omicron123",
+    "status": "active"
+  },
+  {
+    "id": 16,
+    "name": "Pi Software",
+    "website": "https://pisoftwares.com",
+    "senderid": "PISOFT",
+    "smsuser": "pi_user",
+    "smspwd": "pi123",
+    "status": "active"
+  },
+  {
+    "id": 17,
+    "name": "Rho Solutions",
+    "website": "https://rhosolutions.in",
+    "senderid": "RHOSOL",
+    "smsuser": "rho_user",
+    "smspwd": "rho123",
+    "status": "active"
+  },
+  {
+    "id": 18,
+    "name": "Sigma Technologies",
+    "website": "https://sigmatech.in",
+    "senderid": "SIGTEC",
+    "smsuser": "sigma_user",
+    "smspwd": "sigma123",
+    "status": "active"
+  },
+  {
+    "id": 19,
+    "name": "Tau Softwares",
+    "website": "https://tausoftwares.com",
+    "senderid": "TAUSFT",
+    "smsuser": "tau_user",
+    "smspwd": "tau123",
+    "status": "active"
+  },
+  {
+    "id": 20,
+    "name": "Omega Corp",
+    "website": "https://omegacorp.net",
+    "senderid": "OMEGAC",
+    "smsuser": "omega_user",
+    "smspwd": "omega123",
+    "status": "de-active"
+  }
+]
