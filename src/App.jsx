@@ -49,15 +49,21 @@ import CreateMDS from "./components/members/mds/CreateMDS";
 import CreateRetailerBYDs from "./components/members/ds/CreateRetailerBYDs";
 import TransactionHistory from "./pages/transaction_report/TransactionHistory";
 import CreateCutsomerBYRetailer from "./components/members/retailer/CreateCustomerBYRetailer";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthDebug from "./components/auth/AuthDebug";
 
 // admin
 
 const App = () => {
   const router = createBrowserRouter([
-    // super admin
+    // super admin - protected routes
     {
       path: "/",
-      Component: SuperAdminLayout,
+      element: (
+        <ProtectedRoute>
+          <SuperAdminLayout />
+        </ProtectedRoute>
+      ),
       children: [
         {
           path: "/",
@@ -267,6 +273,11 @@ const App = () => {
             //   Component: CreateWhitelabel,
             // },
           ],
+        },
+        // Debug route for authentication testing
+        {
+          path: "debug/auth",
+          Component: AuthDebug,
         },
       ],
     },
