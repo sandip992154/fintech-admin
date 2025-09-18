@@ -22,9 +22,15 @@ const UserDropdown = ({ ref }) => {
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-white rounded-full"></span>
         </div>
         <div>
-          <h4 className="font-semibold">Hello {user?.name || 'Admin'}</h4>
-          <p className="text-sm text-gray-300 dark:text-gray-500">{user?.role || 'Admin'}</p>
-          <p className="text-sm text-gray-300 dark:text-gray-500">UserId - {user?.id || '1'}</p>
+          <h4 className="font-semibold">
+            Hello {user?.full_name.slice(0, 20) || "Admin"}
+          </h4>
+          <p className="text-sm text-gray-300 dark:text-gray-500">
+            {user?.role_name || "Admin"}
+          </p>
+          <p className="text-sm text-gray-300 dark:text-gray-500">
+            UserId - {user?.role_id || "1"}
+          </p>
         </div>
       </div>
 
@@ -38,7 +44,7 @@ const UserDropdown = ({ ref }) => {
             My Profile
           </Link>
         </button>
-        <button 
+        <button
           onClick={logout}
           className="flex items-center space-x-3 hover:text-red-400 dark:hover:text-red-600 transition"
         >

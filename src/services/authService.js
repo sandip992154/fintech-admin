@@ -2,7 +2,8 @@
  * API service for authentication endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.mydomain.com';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://api.mydomain.com";
 
 /**
  * HTTP client with automatic token inclusion
@@ -14,17 +15,17 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    const token = sessionStorage.getItem('accessToken');
-    
+    const token = sessionStorage.getItem("accessToken");
+
     // Skip API calls if using default placeholder URL (development mode)
-    if (this.baseURL === 'https://api.mydomain.com') {
-      console.log('⚡ Development mode: API call skipped for', endpoint);
-      throw new Error('API not configured - using development mode');
+    if (this.baseURL === "https://api.mydomain.com") {
+      console.log("⚡ Development mode: API call skipped for", endpoint);
+      throw new Error("API not configured - using development mode");
     }
-    
+
     const config = {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
@@ -33,36 +34,38 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle 401 Unauthorized - token expired or invalid
       if (response.status === 401) {
-        console.log('🚫 Token expired or invalid, redirecting to login');
+        console.log("🚫 Token expired or invalid, redirecting to login");
         sessionStorage.clear();
         localStorage.clear();
-        window.location.href = '/signin';
+        window.location.href = import.meta.env.VITE_API_SIGNIN_URL;
         return null;
       }
 
       // Handle other error statuses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       return await response.json();
     } catch (error) {
-      console.error('🚨 API Request failed:', error);
+      console.error("🚨 API Request failed:", error);
       throw error;
     }
   }
 
   get(endpoint, options = {}) {
-    return this.request(endpoint, { method: 'GET', ...options });
+    return this.request(endpoint, { method: "GET", ...options });
   }
 
   post(endpoint, data, options = {}) {
     return this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
       ...options,
     });
@@ -70,14 +73,14 @@ class ApiClient {
 
   put(endpoint, data, options = {}) {
     return this.request(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
       ...options,
     });
   }
 
   delete(endpoint, options = {}) {
-    return this.request(endpoint, { method: 'DELETE', ...options });
+    return this.request(endpoint, { method: "DELETE", ...options });
   }
 }
 
@@ -93,9 +96,9 @@ export const authApi = {
    * @returns {Promise<Object>} User data and token
    */
   login: async (credentials) => {
-    console.log('🔐 Attempting login...');
-    const response = await apiClient.post('/auth/login', credentials);
-    console.log('✅ Login successful');
+    // console.log('🔐 Attempting login...');
+    const response = await apiClient.post("/auth/login", credentials);
+    console.log("✅ Login successful");
     return response;
   },
 
@@ -105,9 +108,9 @@ export const authApi = {
    * @returns {Promise<Object>} User data and token
    */
   loginJson: async (credentials) => {
-    console.log('🔐 Attempting JSON login...');
-    const response = await apiClient.post('/auth/login-json', credentials);
-    console.log('✅ JSON login successful');
+    // console.log('🔐 Attempting JSON login...');
+    const response = await apiClient.post("/auth/login-json", credentials);
+    console.log("✅ JSON login successful");
     return response;
   },
 
@@ -117,9 +120,9 @@ export const authApi = {
    * @returns {Promise<Object>} User data and token
    */
   register: async (userData) => {
-    console.log('📝 Attempting registration...');
-    const response = await apiClient.post('/auth/register', userData);
-    console.log('✅ Registration successful');
+    // console.log("📝 Attempting registration...");
+    const response = await apiClient.post("/auth/register", userData);
+    console.log("✅ Registration successful");
     return response;
   },
 
@@ -128,9 +131,9 @@ export const authApi = {
    * @returns {Promise<Object>} Current user data
    */
   getCurrentUser: async () => {
-    console.log('👤 Fetching current user info...');
-    const response = await apiClient.get('/auth/me');
-    console.log('✅ User info retrieved');
+    // console.log("👤 Fetching current user info...");
+    const response = await apiClient.get("/auth/me");
+    console.log("✅ User info retrieved");
     return response;
   },
 
@@ -139,9 +142,9 @@ export const authApi = {
    * @returns {Promise<Object>} New token data
    */
   refreshToken: async () => {
-    console.log('🔄 Refreshing token...');
-    const response = await apiClient.post('/auth/refresh');
-    console.log('✅ Token refreshed');
+    // console.log("🔄 Refreshing token...");
+    const response = await apiClient.post("/auth/refresh");
+    console.log("✅ Token refreshed");
     return response;
   },
 
@@ -150,13 +153,13 @@ export const authApi = {
    * @returns {Promise<Object>} Logout confirmation
    */
   logout: async () => {
-    console.log('🚪 Logging out...');
+    // console.log("🚪 Logging out...");
     try {
-      const response = await apiClient.post('/auth/logout');
-      console.log('✅ Server logout successful');
+      const response = await apiClient.post("/auth/logout");
+      console.log("✅ Server logout successful");
       return response;
     } catch (error) {
-      console.warn('⚠️ Server logout failed, proceeding with client logout');
+      console.warn("⚠️ Server logout failed, proceeding with client logout");
       throw error;
     }
   },
@@ -171,9 +174,9 @@ export const rolesApi = {
    * @returns {Promise<Array>} List of roles
    */
   getRoles: async () => {
-    console.log('📋 Fetching roles...');
-    const response = await apiClient.get('/auth/roles');
-    console.log('✅ Roles retrieved');
+    // console.log("📋 Fetching roles...");
+    const response = await apiClient.get("/auth/roles");
+    console.log("✅ Roles retrieved");
     return response;
   },
 
@@ -183,9 +186,9 @@ export const rolesApi = {
    * @returns {Promise<Object>} Created role
    */
   createRole: async (roleData) => {
-    console.log('➕ Creating role...');
-    const response = await apiClient.post('/auth/roles', roleData);
-    console.log('✅ Role created');
+    // console.log("➕ Creating role...");
+    const response = await apiClient.post("/auth/roles", roleData);
+    console.log("✅ Role created");
     return response;
   },
 
@@ -195,9 +198,9 @@ export const rolesApi = {
    * @returns {Promise<Object>} Role data
    */
   getRole: async (roleId) => {
-    console.log(`📋 Fetching role ${roleId}...`);
+    // console.log(`📋 Fetching role ${roleId}...`);
     const response = await apiClient.get(`/auth/roles/${roleId}`);
-    console.log('✅ Role retrieved');
+    // console.log("✅ Role retrieved");
     return response;
   },
 
@@ -208,9 +211,9 @@ export const rolesApi = {
    * @returns {Promise<Object>} Updated role
    */
   updateRole: async (roleId, roleData) => {
-    console.log(`✏️ Updating role ${roleId}...`);
+    // console.log(`✏️ Updating role ${roleId}...`);
     const response = await apiClient.put(`/auth/roles/${roleId}`, roleData);
-    console.log('✅ Role updated');
+    // console.log("✅ Role updated");
     return response;
   },
 
@@ -220,9 +223,9 @@ export const rolesApi = {
    * @returns {Promise<Object>} Deletion confirmation
    */
   deleteRole: async (roleId) => {
-    console.log(`🗑️ Deleting role ${roleId}...`);
+    // console.log(`🗑️ Deleting role ${roleId}...`);
     const response = await apiClient.delete(`/auth/roles/${roleId}`);
-    console.log('✅ Role deleted');
+    // console.log("✅ Role deleted");
     return response;
   },
 };
@@ -236,9 +239,9 @@ export const userRolesApi = {
    * @returns {Promise<Array>} User's roles
    */
   getUserRoles: async () => {
-    console.log('👤 Fetching user roles...');
-    const response = await apiClient.get('/auth/user/roles');
-    console.log('✅ User roles retrieved');
+    // console.log("👤 Fetching user roles...");
+    const response = await apiClient.get("/auth/user/roles");
+    // console.log("✅ User roles retrieved");
     return response;
   },
 
@@ -248,9 +251,9 @@ export const userRolesApi = {
    * @returns {Promise<Object>} Assignment confirmation
    */
   assignRole: async (roleData) => {
-    console.log('➕ Assigning role to user...');
-    const response = await apiClient.post('/auth/user/roles', roleData);
-    console.log('✅ Role assigned');
+    // console.log("➕ Assigning role to user...");
+    const response = await apiClient.post("/auth/user/roles", roleData);
+    // console.log("✅ Role assigned");
     return response;
   },
 
@@ -260,9 +263,9 @@ export const userRolesApi = {
    * @returns {Promise<Object>} Removal confirmation
    */
   removeRole: async (roleId) => {
-    console.log(`➖ Removing role ${roleId} from user...`);
+    // console.log(`➖ Removing role ${roleId} from user...`);
     const response = await apiClient.delete(`/auth/user/roles/${roleId}`);
-    console.log('✅ Role removed');
+    // console.log("✅ Role removed");
     return response;
   },
 
@@ -271,9 +274,9 @@ export const userRolesApi = {
    * @returns {Promise<Array>} User's permissions
    */
   getUserPermissions: async () => {
-    console.log('🔑 Fetching user permissions...');
-    const response = await apiClient.get('/auth/user/permissions');
-    console.log('✅ User permissions retrieved');
+    // console.log("🔑 Fetching user permissions...");
+    const response = await apiClient.get("/auth/user/permissions");
+    // console.log("✅ User permissions retrieved");
     return response;
   },
 };
