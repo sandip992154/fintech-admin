@@ -6,7 +6,7 @@ import {
   getUserData,
   logout as logoutUser,
   refreshAccessToken,
-} from "../utils/auth";
+} from "../utils/auth.js";
 import { userRolesApi } from "../services/authService";
 
 const AuthContext = createContext();
