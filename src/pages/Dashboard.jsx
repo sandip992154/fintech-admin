@@ -19,7 +19,6 @@ import RechargeBillPaymentCard from "../components/dashboard/cards/RechargeBillP
 import BankingServicesCard from "../components/dashboard/cards/BankingServicesCard";
 import InsuranceLoanCard from "../components/dashboard/cards/InsuranceLoanCard";
 import TravelServicesCard from "../components/dashboard/cards/TravelServicesCard";
-import { useAuth } from "../hooks/useAuth";
 
 const serviceCards = [
   {
@@ -59,7 +58,6 @@ const serviceCards = [
 ];
 
 export default function Dashboard() {
-  const { user, token, userRoles, userPermissions, logout } = useAuth();
   const [isCardsVisible, setIsCardsVisible] = useState({
     recharge: false,
     banking: false,
@@ -78,71 +76,11 @@ export default function Dashboard() {
         <div className="flex justify-between items-center ">
           <div>
             <h2 className="text-xl font-bold">Dashboard</h2>
-            {user && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <p>Welcome back, {user.name || user.username || 'Admin'}!</p>
-                {userRoles.length > 0 && (
-                  <p>Roles: {userRoles.map(role => role.name || role.slug).join(', ')}</p>
-                )}
-              </div>
-            )}
           </div>
           <div className="flex items-center gap-4">
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
-            >
-              Logout
-            </button>
             <CustomDatePicker />
           </div>
         </div>
-        
-        {/* User Info Panel for Development */}
-        {(token || userRoles.length > 0 || userPermissions.length > 0) && (
-          <div className="mt-2 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg border space-y-2">
-            {token && (
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🔐 Access Token:</p>
-                <code className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded break-all block">
-                  {token}
-                </code>
-              </div>
-            )}
-            
-            {userRoles.length > 0 && (
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">👥 User Roles:</p>
-                <div className="flex flex-wrap gap-1">
-                  {userRoles.map((role, index) => (
-                    <span 
-                      key={index}
-                      className="text-xs bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded"
-                    >
-                      {role.name || role.slug}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {userPermissions.length > 0 && (
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🔑 User Permissions:</p>
-                <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                  {userPermissions.map((permission, index) => (
-                    <span 
-                      key={index}
-                      className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
-                    >
-                      {permission.name || permission.slug}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
       {/* Scrollable Content */}
       <div className="overflow-y-auto max-h-[calc(100vh-120px)] px-4 pb-6  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">

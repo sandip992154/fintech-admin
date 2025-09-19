@@ -1,5 +1,9 @@
-import { useEffect } from 'react';
-import { getTokenFromUrl, setAccessToken, cleanUrlFromToken } from '../utils/auth';
+import { useEffect } from "react";
+import {
+  getTokenFromUrl,
+  setAccessToken,
+  cleanUrlFromToken,
+} from "../utils/auth";
 
 const Landing = () => {
   useEffect(() => {
@@ -9,10 +13,10 @@ const Landing = () => {
       setAccessToken(token);
       cleanUrlFromToken();
       // Redirect to main app after setting token
-      window.location.href = '/';
+      window.location.href = "/";
     } else {
       // No token found, redirect to login
-      window.location.href = 'https://mydomain.com/login';
+      window.location.href = import.meta.env.VITE_API_SIGNIN_URL;
     }
   }, []);
 
@@ -20,7 +24,9 @@ const Landing = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Setting up your session...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Setting up your session...
+        </p>
       </div>
     </div>
   );
