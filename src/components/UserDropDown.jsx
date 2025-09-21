@@ -29,13 +29,13 @@ const UserDropdown = ({ ref }) => {
             {user?.role_name || "Admin"}
           </p>
           <p className="text-sm text-gray-300 dark:text-gray-500">
-            UserId - {user?.role_id || "1"}
+            UserId - {user?.user_code || "1"}
           </p>
         </div>
       </div>
 
       <div className="border-t border-gray-700 dark:border-gray-300"></div>
-      
+
       {/* Actions */}
       <div className="flex flex-col space-y-3">
         <button className="flex items-center space-x-3 hover:text-indigo-400 dark:hover:text-indigo-600 transition">

@@ -35,7 +35,9 @@ export default function Header() {
   return (
     <header className=" text-black bg-white dark:bg-transparent dark:text-adminOffWhite flex justify-between items-center px-6 py-3 rounded-t-lg shadow-sm ">
       {/* Left: Welcome text */}
-      <h2 className="text-sm font-bold">WELCOME TO NK TAX CONSULTANCY</h2>
+      <h2 className="text-sm font-bold">
+        WELCOME TO Bandaru Software Solution Pvt. Ltd.
+      </h2>
 
       {/* Right: Action Items */}
       <div className="flex items-center gap-4 ">

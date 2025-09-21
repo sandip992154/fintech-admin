@@ -176,7 +176,7 @@ export default function Dashboard() {
             </div>
             <p className="mb-1">Timing: 10am to 7pm</p>
             <p>9059207545</p>
-            <p className="font-semibold">support@phonesepay.in</p>
+            <p className="font-semibold">contact@bandarupay.com</p>
           </div>
         </div>
       </div>
