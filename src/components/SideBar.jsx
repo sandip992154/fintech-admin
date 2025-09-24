@@ -26,6 +26,7 @@ const menuItems = [
     label: "Member",
     component: "",
     subItems: [
+      { label: "Member Management", component: "members/management" },
       { label: "White Label", component: "members/whitelabel" },
       { label: "Master Distributor", component: "members/mds" },
       { label: "Distributor", component: "members/ds" },
@@ -108,7 +109,10 @@ const menuItems = [
     icon: <FiSettings />,
     label: "Account Setting",
     component: "",
-    subItems: [{ label: "Profile Setting", component: "profile/view" }],
+    subItems: [
+      { label: "Profile Setting", component: "profile/view" },
+      { label: "MPIN Management", component: "profile/mpin" },
+    ],
   },
   {
     icon: <FaUsersCog />,

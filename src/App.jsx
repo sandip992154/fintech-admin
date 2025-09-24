@@ -51,6 +51,8 @@ import TransactionHistory from "./pages/transaction_report/TransactionHistory";
 import CreateCutsomerBYRetailer from "./components/members/retailer/CreateCustomerBYRetailer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthDebug from "./components/auth/AuthDebug";
+import EnhancedMemberManagement from "./pages/members/EnhancedMemberManagement";
+import MPINManagement from "./pages/MPINManagement";
 
 // admin
 
@@ -202,6 +204,18 @@ const App = () => {
         {
           path: "profile/view",
           Component: AccountPortalSettings,
+        },
+
+        // Enhanced Member Management
+        {
+          path: "members/management",
+          Component: EnhancedMemberManagement,
+        },
+
+        // MPIN Management
+        {
+          path: "profile/mpin",
+          Component: MPINManagement,
         },
 
         {
