@@ -32,7 +32,7 @@ class KYCManagementService {
         });
       }
 
-      const response = await apiClient.request("/api/v1/kyc/submit", {
+      const response = await apiClient.request("/kyc/submit", {
         method: "POST",
         body: formData,
         headers: {}, // Remove Content-Type to let browser set multipart boundary
@@ -48,9 +48,7 @@ class KYCManagementService {
    * Get user's KYC status and documents
    */
   async getKYCStatus(userId = null) {
-    const endpoint = userId
-      ? `/api/v1/kyc/status/${userId}`
-      : "/api/v1/kyc/status";
+    const endpoint = userId ? `/kyc/status/${userId}` : "/kyc/status";
     try {
       const response = await apiClient.request(endpoint, {
         method: "GET",
@@ -70,12 +68,9 @@ class KYCManagementService {
   async getPendingKYCApplications(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     try {
-      const response = await apiClient.request(
-        `/api/v1/kyc/pending?${queryString}`,
-        {
-          method: "GET",
-        }
-      );
+      const response = await apiClient.request(`/kyc/pending?${queryString}`, {
+        method: "GET",
+      });
       return response;
     } catch (error) {
       console.error("Error fetching pending KYC applications:", error);
@@ -88,7 +83,7 @@ class KYCManagementService {
    */
   async getKYCApplicationDetails(userId) {
     try {
-      const response = await apiClient.request(`/api/v1/kyc/review/${userId}`, {
+      const response = await apiClient.request(`/kyc/review/${userId}`, {
         method: "GET",
       });
       return response;
@@ -103,13 +98,10 @@ class KYCManagementService {
    */
   async approveKYC(userId, comments = "") {
     try {
-      const response = await apiClient.request(
-        `/api/v1/kyc/approve/${userId}`,
-        {
-          method: "POST",
-          body: JSON.stringify({ comments }),
-        }
-      );
+      const response = await apiClient.request(`/kyc/approve/${userId}`, {
+        method: "POST",
+        body: JSON.stringify({ comments }),
+      });
       return response;
     } catch (error) {
       console.error("Error approving KYC:", error);
@@ -122,7 +114,7 @@ class KYCManagementService {
    */
   async rejectKYC(userId, reason) {
     try {
-      const response = await apiClient.request(`/api/v1/kyc/reject/${userId}`, {
+      const response = await apiClient.request(`/kyc/reject/${userId}`, {
         method: "POST",
         body: JSON.stringify({ reason }),
       });
@@ -140,7 +132,7 @@ class KYCManagementService {
    */
   async getKYCStats() {
     try {
-      const response = await apiClient.request("/api/v1/kyc/stats", {
+      const response = await apiClient.request("/kyc/stats", {
         method: "GET",
       });
       return response;
@@ -156,12 +148,9 @@ class KYCManagementService {
   async getKYCHistory(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     try {
-      const response = await apiClient.request(
-        `/api/v1/kyc/history?${queryString}`,
-        {
-          method: "GET",
-        }
-      );
+      const response = await apiClient.request(`/kyc/history?${queryString}`, {
+        method: "GET",
+      });
       return response;
     } catch (error) {
       console.error("Error fetching KYC history:", error);

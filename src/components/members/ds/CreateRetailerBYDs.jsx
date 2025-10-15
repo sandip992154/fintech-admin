@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Link } from "react-router";
+import { useMemberManagement } from "../../../hooks/useMemberManagement";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -27,14 +29,72 @@ const schema = yup.object().shape({
 });
 
 const states = ["Maharashtra", "Gujarat", "Karnataka", "Tamil Nadu"];
-const schemes = ["Retailor-A", "NK Tax Consultancy", "Default"];
 
 const CreateRetailerBYDs = ({ onSubmit }) => {
+  const {
+    schemes,
+    locations,
+    getSchemes,
+    getLocationsByState,
+    createMember,
+    actionLoading,
+    error,
+    clearErrors,
+  } = useMemberManagement("retailer");
+
+  const [selectedState, setSelectedState] = useState("");
+  const [cities, setCities] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  // Load schemes on component mount
+  useEffect(() => {
+    getSchemes();
+  }, [getSchemes]);
+
+  // Handle state change to load cities
+  const handleStateChange = async (state) => {
+    setSelectedState(state);
+    setCities([]);
+    if (state) {
+      setLoadingCities(true);
+      try {
+        const cityData = await getLocationsByState(state);
+        setCities(cityData || []);
+      } catch (error) {
+        toast.error("Failed to load cities");
+      } finally {
+        setLoadingCities(false);
+      }
+    }
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (formData) => {
+    try {
+      const result = await createMember({
+        ...formData,
+        role: "retailer",
+      });
+
+      if (result.success) {
+        toast.success("Retailer member created successfully!");
+        if (onSubmit) onSubmit(result.data);
+      } else {
+        toast.error(result.error || "Failed to create member");
+      }
+    } catch (error) {
+      toast.error("Failed to create member");
+    }
+  };
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm({ resolver: yupResolver(schema) });
+
+  const watchedState = watch("state");
 
   const inputClass =
     "px-4 py-2 bg-transparent rounded ring-1 ring-gray-600 focus:outline-none focus:ring-2 focus:ring-primary";
@@ -42,7 +102,7 @@ const CreateRetailerBYDs = ({ onSubmit }) => {
   return (
     <div className="h-[90vh] 2xl:max-w-[80%] p-4 mx-8 bg-white mt-2 dark:bg-darkBlue/70 rounded-2xl 2xl:mx-auto text-gray-800 overflow-hidden overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="grid grid-cols-1 md:grid-cols-2 gap-4 dark:text-white"
       >
         {/* Personal Info - Left Column */}
@@ -95,15 +155,29 @@ const CreateRetailerBYDs = ({ onSubmit }) => {
           <label>
             State <span className="text-red-500">*</span>
           </label>
-          <select {...register("state")} className={inputClass}>
+          <select
+            {...register("state")}
+            className={inputClass}
+            onChange={(e) => {
+              const value = e.target.value;
+              setValue("state", value);
+              setValue("city", ""); // Reset city when state changes
+              handleStateChange(value);
+            }}
+          >
             <option value="" className="dark:bg-darkBlue">
               Select State
             </option>
-            {states.map((state) => (
-              <option key={state} value={state} className="dark:bg-darkBlue">
-                {state}
-              </option>
-            ))}
+            {locations &&
+              locations.map((location) => (
+                <option
+                  key={location.state}
+                  value={location.state}
+                  className="dark:bg-darkBlue"
+                >
+                  {location.state}
+                </option>
+              ))}
           </select>
           {errors.state && (
             <p className="text-red-400 text-xs">{errors.state.message}</p>
@@ -128,11 +202,20 @@ const CreateRetailerBYDs = ({ onSubmit }) => {
           <label>
             City <span className="text-red-500">*</span>
           </label>
-          <input
+          <select
             {...register("city")}
-            placeholder="City"
             className={inputClass}
-          />
+            disabled={!selectedState || loadingCities}
+          >
+            <option value="" className="dark:bg-darkBlue">
+              {loadingCities ? "Loading cities..." : "Select City"}
+            </option>
+            {cities.map((city) => (
+              <option key={city} value={city} className="dark:bg-darkBlue">
+                {city}
+              </option>
+            ))}
+          </select>
           {errors.city && (
             <p className="text-red-400 text-xs">{errors.city.message}</p>
           )}
@@ -200,11 +283,16 @@ const CreateRetailerBYDs = ({ onSubmit }) => {
             <option value="" className="dark:bg-darkBlue">
               Select Scheme
             </option>
-            {schemes.map((sch) => (
-              <option key={sch} value={sch} className="dark:bg-darkBlue">
-                {sch}
-              </option>
-            ))}
+            {schemes &&
+              schemes.map((scheme) => (
+                <option
+                  key={scheme.id}
+                  value={scheme.id}
+                  className="dark:bg-darkBlue"
+                >
+                  {scheme.scheme_name}
+                </option>
+              ))}
           </select>
           {errors.scheme && (
             <p className="text-red-400 text-xs">{errors.scheme.message}</p>
@@ -223,8 +311,9 @@ const CreateRetailerBYDs = ({ onSubmit }) => {
             <button
               type="submit"
               className="mt-4 bg-secondary text-white btn-md"
+              disabled={actionLoading}
             >
-              Add New User
+              {actionLoading ? "Creating..." : "Add New User"}
             </button>
           </div>
         </div>

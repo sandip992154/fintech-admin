@@ -5,6 +5,7 @@ const CommissionDropdown = ({
   setSelectedCommission,
   commissionDropdownOptions,
   handleCommissionOptionClick,
+  scheme,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -63,7 +64,7 @@ const CommissionDropdown = ({
             <div
               key={option.modalKey}
               onClick={() => {
-                handleCommissionOptionClick(option.modalKey);
+                handleCommissionOptionClick(option.modalKey, scheme);
                 setSelectedCommission(commissions?.[option.label] || {});
                 setIsDropdownOpen(false);
               }}

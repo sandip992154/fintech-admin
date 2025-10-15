@@ -1,204 +1,334 @@
-import { createContext, useEffect, useState } from "react";
-import {
-  initializeAuth,
-  isAuthenticated,
-  getAccessToken,
-  getUserData,
-  logout as logoutUser,
-  refreshAccessToken,
-} from "../utils/auth.js";
-import { userRolesApi } from "../services/authService";
+import { createContext, useContext, useState, useEffect } from "react";
+import authService from "../services/authService";
+import { toast } from "react-toastify";
 
-const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
-export { AuthContext };
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [userRoles, setUserRoles] = useState([]);
-  const [userPermissions, setUserPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [pendingIdentifier, setPendingIdentifier] = useState(null);
 
-  // Fetch user roles and permissions
-  const fetchUserRolesAndPermissions = async () => {
-    try {
-      // console.log('🔑 Fetching user roles and permissions...');
-
-      // For development: if no API base URL is set, use simulated data
-      if (
-        !import.meta.env.VITE_API_BASE_URL ||
-        import.meta.env.VITE_API_BASE_URL === "https://api.mydomain.com"
-      ) {
-        // console.log('⚡ Development mode: Using simulated roles and permissions');
-
-        const simulatedRoles = [
-          {
-            id: 1,
-            name: "Admin",
-            slug: "admin",
-            description: "Administrator role",
-          },
-          {
-            id: 2,
-            name: "Super Admin",
-            slug: "super_admin",
-            description: "Super administrator role",
-          },
-        ];
-
-        const simulatedPermissions = [
-          {
-            id: 1,
-            name: "Manage Users",
-            slug: "manage_users",
-            description: "Can create, edit, and delete users",
-          },
-          {
-            id: 2,
-            name: "View Reports",
-            slug: "view_reports",
-            description: "Can access reporting features",
-          },
-          {
-            id: 3,
-            name: "Manage Billing",
-            slug: "manage_billing",
-            description: "Can manage billing operations",
-          },
-          {
-            id: 4,
-            name: "System Settings",
-            slug: "system_settings",
-            description: "Can modify system settings",
-          },
-        ];
-
-        setUserRoles(simulatedRoles);
-        setUserPermissions(simulatedPermissions);
-        // console.log('✅ Simulated roles and permissions loaded');
-        return;
-      }
-
-      // Production: Fetch from API
-      const [roles, permissions] = await Promise.all([
-        userRolesApi.getUserRoles(),
-        userRolesApi.getUserPermissions(),
-      ]);
-
-      setUserRoles(roles || []);
-      setUserPermissions(permissions || []);
-      // console.log('✅ User roles and permissions loaded from API');
-    } catch (error) {
-      console.error("❌ Failed to fetch user roles/permissions:", error);
-      setUserRoles([]);
-      setUserPermissions([]);
-    }
-  };
-
+  // Enhanced token refresh timer with retry logic
   useEffect(() => {
-    // Initialize authentication on app load
-    const initAuth = async () => {
-      // console.log("🔄 Initializing authentication...");
+    let refreshTimer;
+    let retryCount = 0;
+    const maxRetries = 3;
 
+    const refreshTokenWithRetry = async () => {
       try {
-        const authData = await initializeAuth();
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken) {
+          console.log("No refresh token available");
+          return;
+        }
 
-        if (authData && authData.token && authData.userData) {
-          setToken(authData.token);
-          setUser(authData.userData);
-
-          // Fetch roles and permissions for authenticated user
-          await fetchUserRolesAndPermissions();
-
-          // console.log("✅ Authentication successful");
-        } else {
-          console.log("❌ No valid authentication found");
-          setToken(null);
-          setUser(null);
-          setUserRoles([]);
-          setUserPermissions([]);
+        console.log("Attempting token refresh...");
+        const response = await authService.refreshToken(refreshToken);
+        if (response.access_token) {
+          localStorage.setItem("token", response.access_token);
+          // Update refresh token if a new one is provided
+          if (response.refresh_token) {
+            localStorage.setItem("refresh_token", response.refresh_token);
+          }
+          retryCount = 0; // Reset retry count on success
+          console.log("Token refreshed successfully");
         }
       } catch (error) {
-        console.error("❌ Authentication initialization failed:", error);
-        setToken(null);
-        setUser(null);
-        setUserRoles([]);
-        setUserPermissions([]);
-      } finally {
-        setIsLoading(false);
+        console.error("Token refresh failed:", error);
+        retryCount++;
+
+        if (retryCount >= maxRetries) {
+          console.error("Max refresh retries reached, logging out");
+          toast.warning("Session expired. Please log in again.", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+          handleLogout();
+        } else {
+          console.log(`Retrying token refresh (${retryCount}/${maxRetries})`);
+          // Retry after a delay
+          setTimeout(refreshTokenWithRetry, 5000 * retryCount);
+        }
       }
     };
 
-    initAuth();
+    if (isAuthenticated) {
+      const refreshInterval = 24 * 60 * 60 * 1000; // 24 hours (refresh once a day)
+      refreshTimer = setInterval(refreshTokenWithRetry, refreshInterval);
+    }
+
+    return () => clearInterval(refreshTimer);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    checkAuth();
   }, []);
 
-  // Auto-refresh token every 45 minutes
-  useEffect(() => {
-    if (!token) return;
-
-    const refreshInterval = setInterval(async () => {
-      // console.log("🔄 Auto-refreshing token...");
-      const refreshed = await refreshAccessToken();
-
-      if (!refreshed) {
-        console.log("❌ Auto-refresh failed, logging out");
-        logout();
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+        setIsAuthenticated(true);
       }
-    }, 45 * 60 * 1000); // 45 minutes
+    } catch (error) {
+      handleLogout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => clearInterval(refreshInterval);
-  }, [token]);
+  const login = async (credentials) => {
+    try {
+      const response = await authService.login(credentials);
+      console.log("Login response:", response); // Debug log
 
-  const logout = async () => {
-    setToken(null);
+      // Get username from credentials
+      const username =
+        credentials instanceof FormData
+          ? credentials.get("username")
+          : credentials.username;
+
+      // If we get an OTP sent message, set up the OTP verification state
+      if (response?.message?.includes("OTP sent")) {
+        setPendingIdentifier(username);
+        setIsOtpSent(true);
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Login error:", error); // Debug log
+
+      // Check if the error message indicates OTP was sent
+      if (error.message?.includes("OTP sent")) {
+        const username =
+          credentials instanceof FormData
+            ? credentials.get("username")
+            : credentials.username;
+        setPendingIdentifier(username);
+        setIsOtpSent(true);
+        return { message: error.message };
+      }
+
+      // Otherwise rethrow the error
+      throw error;
+    }
+  };
+
+  const verifyOtp = async (otp) => {
+    try {
+      if (!pendingIdentifier) {
+        throw new Error("No pending login request");
+      }
+
+      const response = await authService.verifyOtp({
+        identifier: pendingIdentifier,
+        otp: otp,
+      });
+
+      if (response.access_token) {
+        localStorage.setItem("token", response.access_token);
+        if (response.refresh_token) {
+          localStorage.setItem("refresh_token", response.refresh_token);
+        }
+
+        // Store login timestamp for session management
+        localStorage.setItem("login_timestamp", Date.now().toString());
+
+        // Get user profile
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+        setIsAuthenticated(true);
+        setIsOtpSent(false);
+        setPendingIdentifier(null);
+
+        // Success toast with user info
+        toast.success(`🎉 Welcome back, ${userData.name || userData.email}!`, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+
+        // Return success to let component handle navigation
+        return { success: true, user: userData };
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      throw error;
+    }
+  };
+
+  const handleLogout = (showToast = true) => {
+    // Clear all auth-related data
+    authService.logout();
     setUser(null);
-    setUserRoles([]);
-    setUserPermissions([]);
-    await logoutUser();
+    setIsAuthenticated(false);
+    setIsOtpSent(false);
+    setPendingIdentifier(null);
+
+    // Clear any pending toasts
+    toast.dismiss();
+
+    if (showToast) {
+      toast.info("👋 You have been logged out successfully.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+
+    // Return success to let component handle navigation
+    return { success: true };
   };
 
-  // Role-based access control helpers
-  const hasRole = (roleName) => {
-    return userRoles.some(
-      (role) => role.name === roleName || role.slug === roleName
-    );
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      toast.success("Password changed successfully!");
+    } catch (error) {
+      toast.error(
+        error.message || "Failed to change password. Please try again."
+      );
+      throw error;
+    }
   };
 
-  const hasPermission = (permissionName) => {
-    return userPermissions.some(
-      (permission) =>
-        permission.name === permissionName || permission.slug === permissionName
-    );
+  const forgotPassword = async (email) => {
+    try {
+      await authService.forgotPassword(email);
+      toast.success("Password reset instructions sent to your email!");
+    } catch (error) {
+      toast.error(
+        error.message || "Failed to process request. Please try again."
+      );
+      throw error;
+    }
   };
 
-  const hasAnyRole = (roleNames) => {
-    return roleNames.some((roleName) => hasRole(roleName));
+  const resetPassword = async (token, newPassword) => {
+    try {
+      await authService.resetPassword(token, newPassword);
+      toast.success(
+        "Password reset successful! Please login with your new password."
+      );
+      // Return success to let component handle navigation
+      return { success: true };
+    } catch (error) {
+      toast.error(
+        error.message || "Failed to reset password. Please try again."
+      );
+      throw error;
+    }
   };
 
-  const hasAnyPermission = (permissionNames) => {
-    return permissionNames.some((permissionName) =>
-      hasPermission(permissionName)
-    );
-  };
+  // Enhanced session activity monitoring with warnings
+  useEffect(() => {
+    let inactivityTimer;
+    let warningTimer;
+    const inactivityPeriod = 30 * 60 * 1000; // 30 minutes
+    const warningPeriod = 25 * 60 * 1000; // 25 minutes (5 min warning)
+
+    const showInactivityWarning = () => {
+      toast.warning(
+        "⚠️ You'll be logged out in 5 minutes due to inactivity. Move your mouse to stay logged in.",
+        {
+          position: "top-center",
+          autoClose: 10000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          toastId: "inactivity-warning", // Prevent duplicate toasts
+        }
+      );
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+
+      // Set warning timer
+      warningTimer = setTimeout(showInactivityWarning, warningPeriod);
+
+      // Set logout timer
+      inactivityTimer = setTimeout(() => {
+        handleLogout();
+        toast.error(
+          "🔐 Session expired due to inactivity. Please log in again.",
+          {
+            position: "top-center",
+            autoClose: 8000,
+          }
+        );
+      }, inactivityPeriod);
+    };
+
+    if (isAuthenticated) {
+      // Monitor user activity
+      const events = [
+        "mousedown",
+        "keydown",
+        "scroll",
+        "touchstart",
+        "mousemove",
+        "click",
+      ];
+
+      events.forEach((event) =>
+        document.addEventListener(event, resetTimer, true)
+      );
+      resetTimer();
+
+      return () => {
+        events.forEach((event) =>
+          document.removeEventListener(event, resetTimer, true)
+        );
+        clearTimeout(inactivityTimer);
+        clearTimeout(warningTimer);
+      };
+    }
+  }, [isAuthenticated]);
+
+  // Keep session alive on page visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isAuthenticated) {
+        // Check if token is still valid when user returns to tab
+        checkAuth();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isAuthenticated]);
 
   const value = {
     user,
-    token,
-    userRoles,
-    userPermissions,
-    isLoading,
-    isAuthenticated: isAuthenticated(),
-    logout,
-    getAccessToken,
-    // Role-based access control
-    hasRole,
-    hasPermission,
-    hasAnyRole,
-    hasAnyPermission,
-    // Refresh functions
-    refreshUserData: fetchUserRolesAndPermissions,
+    loading,
+    isAuthenticated,
+    isOtpSent,
+    setIsOtpSent,
+    login,
+    verifyOtp,
+    logout: handleLogout,
+    changePassword,
+    forgotPassword,
+    resetPassword,
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Or your loading component
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

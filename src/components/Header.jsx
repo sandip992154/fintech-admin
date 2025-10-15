@@ -5,13 +5,34 @@ import { useDarkTheme } from "../hooks/useDarkTheme";
 import { FaMoon } from "react-icons/fa";
 import UserDropdown from "./UserDropDown";
 import { SuperModal } from "./utility/SuperModel";
+import StatusIndicator from "./kyc/StatusIndicator";
+import { getUserStatus, shouldRedirectToKYC } from "../utils/userStatus";
 
 export default function Header() {
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const { isSuperDarkMode, toggleSuperTheme } = useDarkTheme();
   const [profile, setProfile] = useState(false);
+  const [userStatus, setUserStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const dropdownRef = useRef(null);
+
+  // Load user status on component mount
+  useEffect(() => {
+    const loadUserStatus = async () => {
+      try {
+        setLoading(true);
+        const status = await getUserStatus();
+        setUserStatus(status);
+      } catch (error) {
+        console.error("Error loading user status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserStatus();
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -41,6 +62,26 @@ export default function Header() {
 
       {/* Right: Action Items */}
       <div className="flex items-center gap-4 ">
+        {/* KYC and MPIN Status Indicators */}
+        {!loading && userStatus && (
+          <div className="flex items-center gap-2">
+            {/* KYC Status */}
+            <StatusIndicator
+              type="kyc"
+              status={userStatus.kyc.status}
+              size="xs"
+              className="hidden sm:flex"
+            />
+
+            {/* MPIN Status */}
+            <StatusIndicator
+              type="mpin"
+              hasMPIN={userStatus.mpin.has_mpin}
+              size="xs"
+              className="hidden sm:flex"
+            />
+          </div>
+        )}
         {isSuperDarkMode ? (
           <FaSun
             className="text-xl text-black dark:text-adminOffWhite"

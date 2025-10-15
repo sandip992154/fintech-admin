@@ -64,7 +64,7 @@ class MPINManagementService {
    */
   async getMPINStatus() {
     try {
-      const response = await apiClient.request("/api/v1/mpin/status", {
+      const response = await apiClient.request("/api/v1/mpin/mpin/status", {
         method: "GET",
       });
       return response;

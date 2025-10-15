@@ -1,11 +1,15 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
+import { ToastContainer } from "react-toastify";
 import "./App.css";
 import "react-datepicker/dist/react-datepicker.css";
+import "react-toastify/dist/ReactToastify.css";
 
 // Super admin
 import { SuperAdminLayout } from "./layouts/SuperAdminLayout";
 import Dashboard from "./pages/Dashboard";
-import { SignIN } from "./pages/SignIn";
+import { SignIn } from "./pages/SignIn";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 import { SchemeManager } from "./pages/resources_tab/SchemeManger";
 import { CompanyProfile } from "./pages/resources_tab/CompanyProfile";
 import { CompanyManger } from "./pages/resources_tab/CompanyManger";
@@ -49,15 +53,38 @@ import CreateMDS from "./components/members/mds/CreateMDS";
 import CreateRetailerBYDs from "./components/members/ds/CreateRetailerBYDs";
 import TransactionHistory from "./pages/transaction_report/TransactionHistory";
 import CreateCutsomerBYRetailer from "./components/members/retailer/CreateCustomerBYRetailer";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AuthDebug from "./components/auth/AuthDebug";
-import EnhancedMemberManagement from "./pages/members/EnhancedMemberManagement";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 import MPINManagement from "./pages/MPINManagement";
+import KYCSubmission from "./pages/KYCSubmission";
+import KYCManagement from "./pages/KYCManagement";
+import CreateWhiteLabelUnified from "./components/members/whitelabel/CreateWhiteLabelUnified";
+import CreateMDSUnified from "./components/members/mds/CreateMDSUnified";
+import CreateRetailerUnified from "./components/members/retailer/CreateRetailerUnified";
+import CreateCustomerUnified from "./components/members/customer/CreateCustomerUnified";
 
 // admin
 
 const App = () => {
   const router = createBrowserRouter([
+    // Authentication routes (public)
+    {
+      path: "/signin",
+      element: <SignIn />,
+    },
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
+    },
+    {
+      path: "/reset-password",
+      element: <ResetPassword />,
+    },
+    {
+      path: "/kyc-submission",
+      element: <KYCSubmission />,
+    },
+
     // super admin - protected routes
     {
       path: "/",
@@ -208,8 +235,8 @@ const App = () => {
 
         // Enhanced Member Management
         {
-          path: "members/management",
-          Component: EnhancedMemberManagement,
+          path: "kyc/members",
+          Component: KYCManagement,
         },
 
         // MPIN Management
@@ -228,7 +255,7 @@ const App = () => {
             },
             {
               path: "create",
-              Component: CreateWhitelabel,
+              Component: CreateWhiteLabelUnified,
             },
           ],
         },
@@ -242,7 +269,7 @@ const App = () => {
             },
             {
               path: "create",
-              Component: CreateMDS,
+              Component: CreateMDSUnified,
             },
           ],
         },
@@ -256,7 +283,7 @@ const App = () => {
             },
             {
               path: "create",
-              Component: CreateRetailerBYDs,
+              Component: CreateRetailerUnified,
             },
           ],
         },
@@ -270,7 +297,7 @@ const App = () => {
             },
             {
               path: "create",
-              Component: CreateCutsomerBYRetailer,
+              Component: CreateCustomerUnified,
             },
           ],
         },
@@ -288,21 +315,27 @@ const App = () => {
             // },
           ],
         },
-        // Debug route for authentication testing
-        {
-          path: "debug/auth",
-          Component: AuthDebug,
-        },
       ],
     },
-
-    // sign up
-    {
-      path: "/signin",
-      Component: SignIN,
-    },
   ]);
-  return <RouterProvider router={router} />;
+
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </AuthProvider>
+  );
 };
 
 export default App;

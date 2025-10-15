@@ -1,18 +1,18 @@
-
-import React from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
 
 const Card = ({ title, label, placeholder }) => {
   const formik = useFormik({
     initialValues: {
-      input: '',
+      input: "",
     },
     validationSchema: Yup.object({
       input: Yup.string().required(`${label} is required`),
     }),
     onSubmit: (values) => {
-      alert(`${title}: ${values.input}`);
+      toast.success(`${title}: ${values.input}`);
     },
   });
 
@@ -46,19 +46,46 @@ const Card = ({ title, label, placeholder }) => {
   );
 };
 
-
 const Cards = () => {
   const cardData = [
-    { title: "Wallet Settlement Type", label: "Settlement Type", placeholder: "Auto" },
-    { title: "Bank Settlement Type", label: "Settlement Type", placeholder: "Auto" },
+    {
+      title: "Wallet Settlement Type",
+      label: "Settlement Type",
+      placeholder: "Auto",
+    },
+    {
+      title: "Bank Settlement Type",
+      label: "Settlement Type",
+      placeholder: "Auto",
+    },
     { title: "Bank Settlement Charge", label: "Charge", placeholder: "5" },
-    { title: "Bank Settlement Charge Upto 25000", label: "Charge", placeholder: "5" },
-    { title: "Login with OTP", label: "Login Type", placeholder: "Without Otp" },
-    { title: "Sending mail id for OTP", label: "Mail Id", placeholder: "support@phonepays.in" },
-    { title: "Sending mailer name id for otp", label: "Mailer Name", placeholder: "NK Tax Consultancy-Phone" },
+    {
+      title: "Bank Settlement Charge Upto 25000",
+      label: "Charge",
+      placeholder: "5",
+    },
+    {
+      title: "Login with OTP",
+      label: "Login Type",
+      placeholder: "Without Otp",
+    },
+    {
+      title: "Sending mail id for OTP",
+      label: "Mail Id",
+      placeholder: "support@phonepays.in",
+    },
+    {
+      title: "Sending mailer name id for otp",
+      label: "Mailer Name",
+      placeholder: "NK Tax Consultancy-Phone",
+    },
     { title: "Transaction Id Code", label: "Code", placeholder: "PSP" },
     { title: "Main Wallet Locked Amount", label: "Amount", placeholder: "0" },
-    { title: "Aeps Bank Settlement Locked Amount", label: "Amount", placeholder: "0" },
+    {
+      title: "Aeps Bank Settlement Locked Amount",
+      label: "Amount",
+      placeholder: "0",
+    },
   ];
 
   return (
@@ -76,5 +103,3 @@ const Cards = () => {
 };
 
 export default Cards;
-
-

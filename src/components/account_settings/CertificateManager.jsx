@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { toast } from "react-toastify";
 
 // Yup Validation Schema
 const schema = yup.object().shape({
@@ -22,7 +23,7 @@ const CertificateManager = ({ initialData }) => {
 
   const onSubmit = (data) => {
     console.log("Submitted data:", data);
-    alert("Certificate info submitted successfully!");
+    toast.success("Certificate info submitted successfully!");
     reset();
   };
 

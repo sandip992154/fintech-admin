@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { toast } from "react-toastify";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -25,7 +26,7 @@ const MappingManager = ({ initialData }) => {
 
   const onSubmit = (data) => {
     console.log("Submitted Data:", data);
-    alert("Mapping updated successfully!");
+    toast.success("Mapping updated successfully!");
     reset();
   };
 

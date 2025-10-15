@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Link } from "react-router";
+import { useMemberManagement } from "../../../hooks/useMemberManagement";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -27,14 +29,72 @@ const schema = yup.object().shape({
 });
 
 const states = ["Maharashtra", "Gujarat", "Karnataka", "Tamil Nadu"];
-const schemes = ["Retailor-A", "NK Tax Consultancy", "Default"];
 
-const CreateCutsomerBYRetailer = ({ onSubmit }) => {
+const CreateCustomerBYRetailer = ({ onSubmit }) => {
+  const {
+    schemes,
+    locations,
+    getSchemes,
+    getLocationsByState,
+    createMember,
+    actionLoading,
+    error,
+    clearErrors,
+  } = useMemberManagement("customer");
+
+  const [selectedState, setSelectedState] = useState("");
+  const [cities, setCities] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  // Load schemes on component mount
+  useEffect(() => {
+    getSchemes();
+  }, [getSchemes]);
+
+  // Handle state change to load cities
+  const handleStateChange = async (state) => {
+    setSelectedState(state);
+    setCities([]);
+    if (state) {
+      setLoadingCities(true);
+      try {
+        const cityData = await getLocationsByState(state);
+        setCities(cityData || []);
+      } catch (error) {
+        toast.error("Failed to load cities");
+      } finally {
+        setLoadingCities(false);
+      }
+    }
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (formData) => {
+    try {
+      const result = await createMember({
+        ...formData,
+        role: "customer",
+      });
+
+      if (result.success) {
+        toast.success("Customer member created successfully!");
+        if (onSubmit) onSubmit(result.data);
+      } else {
+        toast.error(result.error || "Failed to create member");
+      }
+    } catch (error) {
+      toast.error("Failed to create member");
+    }
+  };
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm({ resolver: yupResolver(schema) });
+
+  const watchedState = watch("state");
 
   const inputClass =
     "px-4 py-2 bg-transparent rounded ring-1 ring-gray-600 focus:outline-none focus:ring-2 focus:ring-primary";
@@ -42,7 +102,7 @@ const CreateCutsomerBYRetailer = ({ onSubmit }) => {
   return (
     <div className="h-[90vh] 2xl:max-w-[80%] p-4 mx-8 bg-white mt-2 dark:bg-darkBlue/70 rounded-2xl 2xl:mx-auto text-gray-800 overflow-hidden overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="grid grid-cols-1 md:grid-cols-2 gap-4 dark:text-white"
       >
         {/* Personal Info - Left Column */}
@@ -233,4 +293,4 @@ const CreateCutsomerBYRetailer = ({ onSubmit }) => {
   );
 };
 
-export default CreateCutsomerBYRetailer;
+export default CreateCustomerBYRetailer;

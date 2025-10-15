@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { toast } from "react-toastify";
 
 // Validation schema using Yup
 const schema = yup.object().shape({
@@ -25,7 +26,7 @@ const RoleManager = ({ initialData }) => {
 
   const onSubmit = (data) => {
     console.log("Submitted data:", data);
-    alert("Role changed successfully!");
+    toast.success("Role changed successfully!");
     reset();
   };
 

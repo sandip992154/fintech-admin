@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { toast } from "react-toastify";
+import apiClient from "../../services/apiClient";
 
 // ✅ Validation Schema
 const schema = yup.object().shape({
@@ -19,31 +21,60 @@ const schema = yup.object().shape({
     .required("OTP is required"),
 });
 
-const PinManager = ({ initialData }) => {
+const PinManager = ({ initialData, onSubmit, loading = false }) => {
   const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm({
     defaultValues: initialData,
     resolver: yupResolver(schema),
   });
 
-  const handleSendOtp = () => {
-    alert("OTP has been sent!");
-    setOtpSent(true);
+  const handleSendOtp = async () => {
+    setSendingOtp(true);
+    try {
+      const response = await apiClient.post("/api/v1/profile/otp/generate", {
+        purpose: "pin_change",
+      });
+
+      toast.success(response.data.message);
+      setOtpSent(true);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      const errorMessage =
+        error.response?.data?.detail || error.message || "Failed to send OTP";
+      toast.error(errorMessage);
+    } finally {
+      setSendingOtp(false);
+    }
   };
 
-  const onSubmit = (data) => {
-    console.log("PIN Reset Data:", data);
-    // Process PIN reset here
+  const handleFormSubmit = async (data) => {
+    try {
+      // Direct PIN change - OTP verification will be handled by the backend
+      if (onSubmit) {
+        const pinData = {
+          new_pin: data.newPin,
+          confirm_pin: data.confirmPin,
+          otp: data.otp,
+        };
+        await onSubmit(pinData);
+        setOtpVerified(true);
+      }
+    } catch (error) {
+      toast.error("Error processing PIN change");
+    }
   };
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl"
     >
       {/* New PIN */}
@@ -52,7 +83,7 @@ const PinManager = ({ initialData }) => {
         <input
           type="password"
           inputMode="numeric"
-          maxLength="6"
+          maxLength="4"
           {...register("newPin")}
           className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
         />
@@ -65,7 +96,7 @@ const PinManager = ({ initialData }) => {
         <input
           type="password"
           inputMode="numeric"
-          maxLength="6"
+          maxLength="4"
           {...register("confirmPin")}
           className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
         />
@@ -81,9 +112,10 @@ const PinManager = ({ initialData }) => {
           <button
             type="button"
             onClick={handleSendOtp}
-            className="text-xs text-violet-400 hover:underline"
+            disabled={sendingOtp}
+            className="text-xs text-violet-400 hover:underline disabled:opacity-50"
           >
-            {otpSent ? "Resend OTP" : "Send OTP"}
+            {sendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
           </button>
         </div>
         <input
@@ -101,10 +133,21 @@ const PinManager = ({ initialData }) => {
       <div className="md:col-span-3">
         <button
           type="submit"
-          className="px-6 py-2 bg-secondary text-white rounded hover:bg-violet-600 transition"
+          disabled={loading || !otpSent}
+          className="px-6 py-2 bg-secondary text-white rounded hover:bg-violet-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Reset PIN
+          {loading
+            ? "Processing..."
+            : otpVerified
+            ? "PIN Updated!"
+            : "Reset PIN"}
         </button>
+
+        {!otpSent && (
+          <p className="text-xs text-gray-500 mt-2">
+            Please send OTP first to enable PIN reset
+          </p>
+        )}
       </div>
     </form>
   );

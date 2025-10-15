@@ -1,162 +1,232 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import apiClient from "../../services/apiClient";
 
-// Yup validation schema
-const schema = yup.object().shape({
-  name: yup.string().required("Name is required"),
-  mobile: yup
-    .string()
-    .matches(/^[6-9]\d{9}$/, "Enter valid 10-digit mobile number")
-    .required("Mobile number is required"),
-  state: yup.string().required("State is required"),
-  city: yup.string().required("City is required"),
-  gender: yup.string().required("Gender is required"),
-  pinCode: yup
-    .string()
-    .matches(/^\d{6}$/, "Enter a valid 6-digit PIN code")
-    .required("PIN code is required"),
-  email: yup.string().email("Invalid email").required("Email is required"),
-  securityPin: yup
-    .string()
-    .matches(/^\d{4,6}$/, "Security PIN must be 4 to 6 digits")
-    .required("Security PIN is required"),
-  address: yup.string().required("Address is required"),
-});
+const ProfileDetails = ({
+  initialData,
+  onSubmit,
+  loading = false,
+  error = null,
+}) => {
+  const [formData, setFormData] = useState(initialData || {});
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-const ProfileDetails = ({ initialData }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      ...initialData,
-    },
-  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (onSubmit) {
+      await onSubmit(formData);
+    }
+  };
 
-  const onSubmit = (data) => {
-    console.log("Submitted Data:", data);
-    alert("Profile updated successfully!");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.post(
+        "/api/v1/profile/upload-photo",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const result = response.data;
+      setFormData((prev) => ({
+        ...prev,
+        profilePhoto: result.data.profile_photo,
+      }));
+      toast.success("Profile photo uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to upload photo";
+      toast.error(errorMessage);
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl"
-    >
-      <div>
-        <label className="block text-sm mb-1">Name</label>
-        <input
-          type="text"
-          {...register("name")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.name?.message}</p>
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-4xl">
+      {error && (
+        <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Profile Photo Section */}
+      <div className="mb-6">
+        <label className="block text-sm mb-2">Profile Photo</label>
+        <div className="flex items-center space-x-4">
+          {formData.profile_photo && (
+            <div className="relative">
+              <img
+                src={formData.profile_photo}
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+              />
+            </div>
+          )}
+          <div className="flex-1">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              disabled={uploadingPhoto}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {uploadingPhoto ? "Uploading..." : "JPG, PNG, GIF up to 5MB"}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm mb-1">Mobile</label>
-        <input
-          type="text"
-          {...register("mobile")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.mobile?.message}</p>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm mb-1">Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+            required
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm mb-1">State</label>
-        <input
-          type="text"
-          {...register("state")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.state?.message}</p>
-      </div>
+        <div>
+          <label className="block text-sm mb-1">Mobile</label>
+          <input
+            type="text"
+            name="mobile"
+            value={formData.mobile || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+            required
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm mb-1">City</label>
-        <input
-          type="text"
-          {...register("city")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.city?.message}</p>
+        <div>
+          <label className="block text-sm mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">State</label>
+          <input
+            type="text"
+            name="state"
+            value={formData.state || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">City</label>
+          <input
+            type="text"
+            name="city"
+            value={formData.city || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">PIN Code</label>
+          <input
+            type="text"
+            name="pinCode"
+            value={formData.pinCode || ""}
+            onChange={handleChange}
+            className="w-full px-3 py-2 rounded border border-gray-600"
+          />
+        </div>
       </div>
 
       <div>
         <label className="block text-sm mb-1">Gender</label>
         <select
-          {...register("gender")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
+          name="gender"
+          value={formData.gender || ""}
+          onChange={handleChange}
+          className="w-full px-3 py-2 rounded border border-gray-600"
         >
-          <option className="dark:bg-darkBlue" value="">
-            Select Gender
-          </option>
-          <option className="dark:bg-darkBlue" value="Male">
-            Male
-          </option>
-          <option className="dark:bg-darkBlue" value="Female">
-            Female
-          </option>
-          <option className="dark:bg-darkBlue" value="Other">
-            Other
-          </option>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
         </select>
-        <p className="text-red-500 text-sm">{errors.gender?.message}</p>
       </div>
 
       <div>
-        <label className="block text-sm mb-1">PIN Code</label>
-        <input
-          type="text"
-          {...register("pinCode")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.pinCode?.message}</p>
-      </div>
-
-      <div>
-        <label className="block text-sm mb-1">Email</label>
-        <input
-          type="email"
-          {...register("email")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.email?.message}</p>
-      </div>
-
-      <div>
-        <label className="block text-sm mb-1">Security PIN</label>
-        <input
-          type="password"
-          {...register("securityPin")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
-        />
-        <p className="text-red-500 text-sm">{errors.securityPin?.message}</p>
-      </div>
-
-      <div className="md:col-span-2">
         <label className="block text-sm mb-1">Address</label>
         <input
           type="text"
-          {...register("address")}
-          className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
+          name="address"
+          value={formData.address || ""}
+          onChange={handleChange}
+          className="w-full px-3 py-2 rounded border border-gray-600"
         />
-        <p className="text-red-500 text-sm">{errors.address?.message}</p>
       </div>
 
-      <div className="md:col-span-2">
-        <button
-          type="submit"
-          className="px-6 py-2 bg-secondary text-white rounded hover:bg-violet-600 transition"
-        >
-          Update Profile
-        </button>
+      <div>
+        <label className="block text-sm mb-1">Security PIN (Optional)</label>
+        <input
+          type="password"
+          name="securityPin"
+          value={formData.securityPin || ""}
+          onChange={handleChange}
+          className="w-full px-3 py-2 rounded border border-gray-600"
+          placeholder="Enter 4-digit PIN (leave empty if not set)"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Only required if you have set up an MPIN (exactly 4 digits)
+        </p>
       </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-secondary text-white py-2 px-6 rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? "Updating..." : "Update Profile"}
+      </button>
     </form>
   );
 };

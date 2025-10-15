@@ -1,4 +1,3 @@
-import React from "react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
@@ -15,7 +14,10 @@ const UserDropdown = ({ ref }) => {
       <div className="flex items-center space-x-3">
         <div className="relative">
           <img
-            src="https://randomuser.me/api/portraits/men/32.jpg"
+            src={
+              user.profile_photo ||
+              "https://randomuser.me/api/portraits/men/32.jpg"
+            }
             alt="User"
             className="w-12 h-12 rounded-full object-cover"
           />
@@ -26,7 +28,7 @@ const UserDropdown = ({ ref }) => {
             Hello {user?.full_name.slice(0, 20) || "Admin"}
           </h4>
           <p className="text-sm text-gray-300 dark:text-gray-500">
-            {user?.role_name || "Admin"}
+            {user?.role_name?.toUpperCase() || "Admin"}
           </p>
           <p className="text-sm text-gray-300 dark:text-gray-500">
             UserId - {user?.user_code || "1"}
