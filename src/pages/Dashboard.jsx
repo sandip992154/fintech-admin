@@ -14,7 +14,7 @@ import WalletBalanceCard from "../components/dashboard/WalletBancedCard";
 import { ServiceCard } from "../components/dashboard/ServiceCard";
 import { useState } from "react";
 import { SuperModal } from "../components/utility/SuperModel";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import RechargeBillPaymentCard from "../components/dashboard/cards/RechargeBillPaymentCard";
 import BankingServicesCard from "../components/dashboard/cards/BankingServicesCard";
 import InsuranceLoanCard from "../components/dashboard/cards/InsuranceLoanCard";

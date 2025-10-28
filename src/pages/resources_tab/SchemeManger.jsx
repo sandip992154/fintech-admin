@@ -1174,9 +1174,6 @@ export const SchemeManager = () => {
               }
               className="max-w-7xl"
             >
-              <div className="text-lg font-semibold mb-4">
-                {label} Commission Settings
-              </div>
               <div className="text-sm text-gray-600 mb-4">
                 Scheme: "{currentSchemeForCommission?.name || "Unknown"}" |
                 Service: {label}

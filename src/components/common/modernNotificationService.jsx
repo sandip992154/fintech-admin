@@ -17,6 +17,7 @@ const DEFAULT_OPTIONS = {
   pauseOnHover: true,
   draggable: true,
   progress: undefined,
+  icon: false, // Hide default toast icons
 };
 
 // Custom toast notification service with modern styling

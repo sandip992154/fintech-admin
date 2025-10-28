@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 import { IoIosArrowDown, IoIosArrowForward } from "../assets/react-icons";
 import { HiOutlineClipboardList } from "react-icons/hi";

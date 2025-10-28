@@ -4,7 +4,7 @@
  * Eliminates code duplication and provides consistent UI/UX
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
 import { useMemberManagement } from "../../hooks/useMemberManagement";

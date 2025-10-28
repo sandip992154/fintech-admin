@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import { getUserStatus, shouldRedirectToKYC } from "../utils/userStatus";

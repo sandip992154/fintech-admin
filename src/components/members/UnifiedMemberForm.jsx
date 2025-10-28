@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useMemberManagement } from "../../hooks/useMemberManagement";
 import { toast } from "react-toastify";
 import PerformanceMonitor from "../common/PerformanceMonitor";

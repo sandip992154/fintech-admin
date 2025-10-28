@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { useMemberManagement } from "../../../../hooks/useMemberManagement";
 import { toast } from "react-toastify";
 
