@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
+    }
+
+    environment {
+        PROJECT_DIR = "/var/www/adminapp"  // Production folder for admin repo
+        REPO_URL = "https://github.com/BandaruPay/admin.git"
+        CREDENTIALS_ID = "FirewingTechnology"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: env.BRANCH_NAME ?: 'main',
+                    credentialsId: "${CREDENTIALS_ID}",
+                    url: "${REPO_URL}"
+            }
+        }
+
+        stage('Build React') {
+            steps {
+                sh """
+                    echo "📦 Building Admin React App"
+                    node -v
+                    npm -v
+
+                    npm install
+                    npm run build
+                """
+            }
+        }
+
+        stage('Deploy React App') {
+            steps {
+                sh """
+                    echo "🚀 Deploying Admin app to ${PROJECT_DIR}"
+
+                    # Ensure project directory exists
+                    sudo mkdir -p ${PROJECT_DIR}
+
+                    # Deploy Vite build (dist/) and set ownership/permissions
+                    sudo rsync -av --delete ${WORKSPACE}/dist/ ${PROJECT_DIR}/
+                    sudo chown -R www-data:www-data ${PROJECT_DIR}
+                    sudo chmod -R 755 ${PROJECT_DIR}
+
+                    # Test Nginx configuration and reload
+                    sudo nginx -t
+                    sudo systemctl reload nginx
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🎉 Admin deployment successful! Available at http://yourdomain.com:7002"
+        }
+        failure {
+            echo "❌ Deployment failed — check Jenkins logs!"
+        }
+    }
+}
