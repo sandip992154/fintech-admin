@@ -13,11 +13,6 @@ const PaginatedTable = ({
   const [displayData, setDisplayData] = useState([]);
 
   useEffect(() => {
-    const filtered = onSearch();
-    setCurrentPage(1);
-  }, [filters]);
-
-  useEffect(() => {
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     setDisplayData(data.slice(start, end));
