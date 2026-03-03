@@ -3,7 +3,11 @@
  * Handles all API calls for schemes, commissions, operators, and AEPS slabs
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+// In production always enforce HTTPS regardless of what the env variable says
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+if (import.meta.env.PROD && API_BASE_URL.startsWith("http://")) {
+  API_BASE_URL = API_BASE_URL.replace("http://", "https://");
+}
 
 class SchemeManagementService {
   constructor() {
