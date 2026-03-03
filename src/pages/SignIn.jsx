@@ -80,8 +80,10 @@ export const SignIn = () => {
       navigate("/");
     } catch (error) {
       console.error("Demo login error:", error);
-      if (error.message?.includes("Network")) {
-        authNotifications.loginError("Network error: Cannot reach backend.");
+      if (error.message?.includes("cold start") || error.message?.includes("waking up") || error.message?.includes("timeout")) {
+        authNotifications.loginError("Backend is waking up. Please wait ~30 seconds and try again.");
+      } else if (error.message?.includes("Network") || error.code === "ERR_NETWORK") {
+        authNotifications.loginError("Cannot reach backend. Check your internet connection.");
       } else {
         authNotifications.loginError(error.message || "Demo login failed. Please try again.");
       }

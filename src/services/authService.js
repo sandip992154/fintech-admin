@@ -166,12 +166,13 @@ const authService = {
   // Demo login - bypasses OTP verification
   demoLogin: async () => {
     try {
-      const formData = new FormData();
+      // Use URLSearchParams (application/x-www-form-urlencoded) as required by OAuth2PasswordRequestForm
+      const formData = new URLSearchParams();
       formData.append("username", "admin");
       formData.append("password", "bandadm000004@123");
       const response = await api.post("/auth/demo-login", formData, {
-        headers: { "Content-Type": undefined },
-        timeout: 30000,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: 65000, // 65s to handle Render free tier cold start (can take 50-60s)
       });
       if (response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
@@ -181,6 +182,9 @@ const authService = {
       }
       return response.data;
     } catch (error) {
+      if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+        throw new Error("Backend is waking up (cold start). Please wait 30 seconds and try again.");
+      }
       if (error.response?.data?.detail) throw new Error(error.response.data.detail);
       throw new Error(error.message || "Demo login failed");
     }
