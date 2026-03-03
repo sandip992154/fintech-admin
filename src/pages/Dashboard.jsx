@@ -15,6 +15,7 @@ import { ServiceCard } from "../components/dashboard/ServiceCard";
 import { useState } from "react";
 import { SuperModal } from "../components/utility/SuperModel";
 import { Link } from "react-router-dom";
+import { FiSend, FiList } from "react-icons/fi";
 import RechargeBillPaymentCard from "../components/dashboard/cards/RechargeBillPaymentCard";
 import BankingServicesCard from "../components/dashboard/cards/BankingServicesCard";
 import InsuranceLoanCard from "../components/dashboard/cards/InsuranceLoanCard";
@@ -85,9 +86,27 @@ export default function Dashboard() {
       {/* Scrollable Content */}
       <div className="overflow-y-auto max-h-[calc(100vh-120px)] px-4 pb-6  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
         <div className="">
-          <div className="grid grid-cols-4 gap-2">
-            <div className="col-span-3">
+          <div className="grid grid-cols-5 gap-2">
+            <div className="col-span-2">
               <WalletBalanceCard />
+            </div>
+            <div className="col-span-1 flex flex-col gap-2">
+              <Link
+                to="fund/tr"
+                className="flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-md shadow p-4 h-full hover:from-green-600 hover:to-green-700 hover:scale-105 transition duration-200 text-center"
+              >
+                <FiSend size={24} />
+                <span className="text-sm font-semibold">Transfer Funds</span>
+              </Link>
+            </div>
+            <div className="col-span-1 flex flex-col gap-2">
+              <Link
+                to="wallet_history"
+                className="flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-md shadow p-4 h-full hover:from-purple-600 hover:to-purple-700 hover:scale-105 transition duration-200 text-center"
+              >
+                <FiList size={24} />
+                <span className="text-sm font-semibold">Transaction History</span>
+              </Link>
             </div>
             <div className="col-span-1">
               <ServiceCard

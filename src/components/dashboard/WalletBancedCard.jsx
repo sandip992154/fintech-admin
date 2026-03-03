@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import walletService from "../../services/walletService";
 import { toast } from "react-toastify";
-import { FiAlertCircle, FiRefreshCw, FiPlus, FiSend, FiList } from "react-icons/fi";
+import { FiAlertCircle, FiRefreshCw, FiPlus } from "react-icons/fi";
 
 const SvgOverlay = () => (
   <svg
@@ -151,22 +150,6 @@ const WalletBalanceCard = () => {
             <FiRefreshCw size={16} />
             Refresh
           </button>
-          <Link
-            to="fund/tr"
-            className="flex items-center gap-2 bg-gradient-to-r from-green-400 to-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-500 hover:to-green-600 hover:scale-105 transition duration-200 shadow-md"
-            title="Transfer funds"
-          >
-            <FiSend size={16} />
-            Transfer Funds
-          </Link>
-          <Link
-            to="wallet_history"
-            className="flex items-center gap-2 bg-gradient-to-r from-purple-400 to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-purple-500 hover:to-purple-600 hover:scale-105 transition duration-200 shadow-md"
-            title="Transaction history"
-          >
-            <FiList size={16} />
-            Transaction History
-          </Link>
         </div>
       </div>
 
