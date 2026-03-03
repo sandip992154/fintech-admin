@@ -11,6 +11,7 @@ import {
   Shield,
   CheckCircle,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LoadingButton } from "../components/ui/Loading";
@@ -54,6 +55,7 @@ export const SignIn = () => {
     handleSubmit: handleLoginSubmit,
     formState: { errors: loginErrors },
     reset: resetLoginForm,
+    setValue: setLoginValue,
   } = useForm({
     resolver: zodResolver(signInSchema),
   });
@@ -66,6 +68,34 @@ export const SignIn = () => {
   } = useForm({
     resolver: zodResolver(otpSchema),
   });
+
+  // Fill demo credentials into the form
+  const handleDemoLogin = async () => {
+    try {
+      setLoading(true);
+      setLoginValue("identifier", "superadmin");
+      setLoginValue("password", "SuperAdmin@123");
+
+      const formData = new FormData();
+      formData.append("username", "superadmin");
+      formData.append("password", "SuperAdmin@123");
+
+      const response = await login(formData);
+
+      if (response?.message?.includes("OTP sent")) {
+        authNotifications.otpSent("email");
+        setOtpTimer(120);
+        resetOtpForm();
+      } else {
+        authNotifications.loginSuccess(response?.user?.name || "Admin");
+      }
+    } catch (error) {
+      console.error("Demo login error:", error);
+      authNotifications.loginError(error.message || "Demo login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onLoginSubmit = async (data) => {
     try {
@@ -452,21 +482,21 @@ export const SignIn = () => {
                       </div>
                     </div>
 
-                    {/* Auto-Fill and Forgot Password */}
-                    <div className="flex items-center justify-end text-sm">
-                      {/* <label className="flex items-center text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        Auto-Fill Credentials
-                      </label> */}
+                    {/* Demo Login & Forgot Password */}
+                    <div className="flex items-center justify-between text-sm gap-4">
+                      <button
+                        type="button"
+                        onClick={handleDemoLogin}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                      >
+                        <Zap className="h-4 w-4" />
+                        {loading ? "Logging in..." : "Demo"}
+                      </button>
                       <button
                         type="button"
                         onClick={() => navigate("/forgot-password")}
-                        className="self-end text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                       >
                         Forgot Password?
                       </button>
