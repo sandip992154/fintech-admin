@@ -11,13 +11,10 @@ class UserManagementService {
    */
   async getUserProfile(userId) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/user-management/profile/${userId}`,
-        {
-          method: "GET",
-        }
+      const response = await apiClient.get(
+        `/user-management/profile/${userId}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error fetching user profile:", error);
       throw error;
@@ -29,14 +26,11 @@ class UserManagementService {
    */
   async updateUserProfile(userId, profileData) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/user-management/profile/${userId}`,
-        {
-          method: "PUT",
-          body: JSON.stringify(profileData),
-        }
+      const response = await apiClient.put(
+        `/user-management/profile/${userId}`,
+        profileData
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error updating user profile:", error);
       throw error;
@@ -50,14 +44,11 @@ class UserManagementService {
    */
   async createMember(memberData) {
     try {
-      const response = await apiClient.request(
-        "/api/v1/user-management/create-member",
-        {
-          method: "POST",
-          body: JSON.stringify(memberData),
-        }
+      const response = await apiClient.post(
+        "/user-management/create-member",
+        memberData
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error creating member:", error);
       throw error;
@@ -70,13 +61,10 @@ class UserManagementService {
   async getMembers(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     try {
-      const response = await apiClient.request(
-        `/api/v1/user-management/members?${queryString}`,
-        {
-          method: "GET",
-        }
+      const response = await apiClient.get(
+        `/user-management/members?${queryString}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error fetching members:", error);
       throw error;
@@ -88,14 +76,11 @@ class UserManagementService {
    */
   async updateMemberStatus(userId, isActive) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/user-management/member/${userId}/status`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ is_active: isActive }),
-        }
+      const response = await apiClient.patch(
+        `/user-management/member/${userId}/status`,
+        { is_active: isActive }
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error updating member status:", error);
       throw error;
@@ -107,13 +92,10 @@ class UserManagementService {
    */
   async deleteMember(userId) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/user-management/member/${userId}`,
-        {
-          method: "DELETE",
-        }
+      const response = await apiClient.delete(
+        `/user-management/member/${userId}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error deleting member:", error);
       throw error;
@@ -127,13 +109,8 @@ class UserManagementService {
    */
   async getMemberStats() {
     try {
-      const response = await apiClient.request(
-        "/api/v1/user-management/stats",
-        {
-          method: "GET",
-        }
-      );
-      return response;
+      const response = await apiClient.get("/user-management/stats");
+      return response.data;
     } catch (error) {
       console.error("Error fetching member stats:", error);
       throw error;
@@ -145,13 +122,8 @@ class UserManagementService {
    */
   async getMemberHierarchy() {
     try {
-      const response = await apiClient.request(
-        "/api/v1/user-management/hierarchy",
-        {
-          method: "GET",
-        }
-      );
-      return response;
+      const response = await apiClient.get("/user-management/hierarchy");
+      return response.data;
     } catch (error) {
       console.error("Error fetching member hierarchy:", error);
       throw error;

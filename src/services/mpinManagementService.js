@@ -11,11 +11,8 @@ class MPINManagementService {
    */
   async setupMPIN(mpinData) {
     try {
-      const response = await apiClient.request("/api/v1/mpin/setup", {
-        method: "POST",
-        body: JSON.stringify(mpinData),
-      });
-      return response;
+      const response = await apiClient.post("/mpin/setup", mpinData);
+      return response.data;
     } catch (error) {
       console.error("Error setting up MPIN:", error);
       throw error;
@@ -27,11 +24,8 @@ class MPINManagementService {
    */
   async verifyMPIN(mpin) {
     try {
-      const response = await apiClient.request("/api/v1/mpin/verify", {
-        method: "POST",
-        body: JSON.stringify({ mpin }),
-      });
-      return response;
+      const response = await apiClient.post("/mpin/verify", { mpin });
+      return response.data;
     } catch (error) {
       console.error("Error verifying MPIN:", error);
       throw error;
@@ -45,14 +39,11 @@ class MPINManagementService {
    */
   async changeMPIN(oldMpin, newMpin) {
     try {
-      const response = await apiClient.request("/api/v1/mpin/change", {
-        method: "POST",
-        body: JSON.stringify({
-          old_mpin: oldMpin,
-          new_mpin: newMpin,
-        }),
+      const response = await apiClient.post("/mpin/change", {
+        old_mpin: oldMpin,
+        new_mpin: newMpin,
       });
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error changing MPIN:", error);
       throw error;
@@ -64,10 +55,8 @@ class MPINManagementService {
    */
   async getMPINStatus() {
     try {
-      const response = await apiClient.request("/api/v1/mpin/mpin/status", {
-        method: "GET",
-      });
-      return response;
+      const response = await apiClient.get("/mpin/status");
+      return response.data;
     } catch (error) {
       console.error("Error fetching MPIN status:", error);
       throw error;
@@ -81,10 +70,8 @@ class MPINManagementService {
    */
   async requestMPINReset() {
     try {
-      const response = await apiClient.request("/api/v1/mpin/reset/request", {
-        method: "POST",
-      });
-      return response;
+      const response = await apiClient.post("/mpin/reset/request");
+      return response.data;
     } catch (error) {
       console.error("Error requesting MPIN reset:", error);
       throw error;
@@ -96,14 +83,8 @@ class MPINManagementService {
    */
   async verifyResetOTP(otp) {
     try {
-      const response = await apiClient.request(
-        "/api/v1/mpin/reset/verify-otp",
-        {
-          method: "POST",
-          body: JSON.stringify({ otp }),
-        }
-      );
-      return response;
+      const response = await apiClient.post("/mpin/reset/verify-otp", { otp });
+      return response.data;
     } catch (error) {
       console.error("Error verifying reset OTP:", error);
       throw error;
@@ -115,14 +96,11 @@ class MPINManagementService {
    */
   async resetMPIN(resetToken, newMpin) {
     try {
-      const response = await apiClient.request("/api/v1/mpin/reset/confirm", {
-        method: "POST",
-        body: JSON.stringify({
-          reset_token: resetToken,
-          new_mpin: newMpin,
-        }),
+      const response = await apiClient.post("/mpin/reset/confirm", {
+        reset_token: resetToken,
+        new_mpin: newMpin,
       });
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error resetting MPIN:", error);
       throw error;
@@ -136,10 +114,8 @@ class MPINManagementService {
    */
   async getMPINStats() {
     try {
-      const response = await apiClient.request("/api/v1/mpin/stats", {
-        method: "GET",
-      });
-      return response;
+      const response = await apiClient.get("/mpin/stats");
+      return response.data;
     } catch (error) {
       console.error("Error fetching MPIN stats:", error);
       throw error;
@@ -151,13 +127,8 @@ class MPINManagementService {
    */
   async adminResetMPIN(userId) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/mpin/admin/reset/${userId}`,
-        {
-          method: "POST",
-        }
-      );
-      return response;
+      const response = await apiClient.post(`/mpin/admin/reset/${userId}`);
+      return response.data;
     } catch (error) {
       console.error("Error admin resetting MPIN:", error);
       throw error;
@@ -169,13 +140,8 @@ class MPINManagementService {
    */
   async unlockMPIN(userId) {
     try {
-      const response = await apiClient.request(
-        `/api/v1/mpin/admin/unlock/${userId}`,
-        {
-          method: "POST",
-        }
-      );
-      return response;
+      const response = await apiClient.post(`/mpin/admin/unlock/${userId}`);
+      return response.data;
     } catch (error) {
       console.error("Error unlocking MPIN:", error);
       throw error;

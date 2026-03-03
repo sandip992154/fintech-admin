@@ -160,7 +160,7 @@ class UnifiedMemberManagementService {
       const queryString = new URLSearchParams(optimizedParams).toString();
 
       const response = await apiClient.get(
-        `/api/v1/members/list?${queryString}`,
+        `/members/list?${queryString}`,
         { signal: abortController.signal }
       );
 
@@ -196,7 +196,7 @@ class UnifiedMemberManagementService {
 
           const basicQueryString = new URLSearchParams(basicParams).toString();
           const retryResponse = await apiClient.get(
-            `/api/v1/members/list?${basicQueryString}`,
+            `/members/list?${basicQueryString}`,
             { signal: abortController.signal }
           );
 
@@ -237,7 +237,7 @@ class UnifiedMemberManagementService {
       }
 
       const queryString = params.toString();
-      const url = `/api/v1/members/${memberId}${
+      const url = `/members/${memberId}${
         queryString ? `?${queryString}` : ""
       }`;
 
@@ -266,7 +266,7 @@ class UnifiedMemberManagementService {
 
       const preparedData = this.prepareMemberData(memberData);
       const response = await apiClient.post(
-        "/api/v1/members/create",
+        "/members/create",
         preparedData
       );
 
@@ -287,7 +287,7 @@ class UnifiedMemberManagementService {
     try {
       const preparedData = this.prepareMemberData(memberData);
       const response = await apiClient.put(
-        `/api/v1/members/${memberId}`,
+        `/members/${memberId}`,
         preparedData
       );
 
@@ -307,7 +307,7 @@ class UnifiedMemberManagementService {
   async updateMemberStatus(memberId, isActive) {
     try {
       const response = await apiClient.patch(
-        `/api/v1/members/${memberId}/status`,
+        `/members/${memberId}/status`,
         {
           is_active: isActive,
         }
@@ -328,7 +328,7 @@ class UnifiedMemberManagementService {
    */
   async deleteMember(memberId) {
     try {
-      const response = await apiClient.delete(`/api/v1/members/${memberId}`);
+      const response = await apiClient.delete(`/members/${memberId}`);
 
       // Clear cache
       this.clearMemberCache();
@@ -373,7 +373,7 @@ class UnifiedMemberManagementService {
 
     try {
       const response = await apiClient.post(
-        "/api/v1/members/bulk-action",
+        "/members/bulk-action",
         actionData
       );
 
@@ -418,7 +418,7 @@ class UnifiedMemberManagementService {
 
     try {
       const response = await apiClient.post(
-        "/api/v1/members/export",
+        "/members/export",
         exportRequest
       );
       return response.data;
@@ -473,7 +473,7 @@ class UnifiedMemberManagementService {
       }
 
       const queryString = params.toString();
-      const url = `/api/v1/members/dashboard${
+      const url = `/members/dashboard${
         queryString ? `?${queryString}` : ""
       }`;
 
@@ -538,7 +538,7 @@ class UnifiedMemberManagementService {
       if (currentUser?.id) params.append("created_by_user", currentUser.id);
 
       const response = await apiClient.get(
-        `/api/v1/members/parents?${params.toString()}`
+        `/members/parents?${params.toString()}`
       );
 
       if (useCache) {
@@ -564,7 +564,7 @@ class UnifiedMemberManagementService {
     }
 
     try {
-      const response = await apiClient.get("/api/v1/members/permissions");
+      const response = await apiClient.get("/members/permissions");
 
       if (useCache) {
         this.setCachedData(cacheKey, response.data);
@@ -590,7 +590,7 @@ class UnifiedMemberManagementService {
 
     try {
       // Use the correct schemes endpoint
-      const response = await apiClient.get("/api/v1/schemes");
+      const response = await apiClient.get("/schemes");
 
       // Process the response data to match frontend expectations
       const processedData = {
@@ -629,7 +629,7 @@ class UnifiedMemberManagementService {
 
     try {
       // Use the unified member endpoint for locations
-      const response = await apiClient.get("/api/v1/members/locations");
+      const response = await apiClient.get("/members/locations");
 
       if (useCache) {
         this.setCachedData(cacheKey, response.data);
