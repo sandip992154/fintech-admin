@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { FaUser, FaSun, FaWallet } from "../assets/react-icons";
 import LoadWalletModal from "./LoadWalletModel";
 import { useDarkTheme } from "../hooks/useDarkTheme";
-import { FaMoon } from "react-icons/fa";
+import { FaMoon, FaHistory, FaExchangeAlt } from "react-icons/fa";
 import UserDropdown from "./UserDropDown";
 import { SuperModal } from "./utility/SuperModel";
 import StatusIndicator from "./kyc/StatusIndicator";
 import { getUserStatus, shouldRedirectToKYC } from "../utils/userStatus";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Header() {
   const [isWalletOpen, setIsWalletOpen] = useState(false);
@@ -82,6 +83,22 @@ export default function Header() {
             />
           </div>
         )}
+        {/* Transfer Funds & Wallet History quick-access buttons */}
+        <Link
+          to="/fund/tr"
+          className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-md transition cursor-pointer"
+        >
+          <FaExchangeAlt className="text-sm" />
+          <span>Transfer Funds</span>
+        </Link>
+        <Link
+          to="/statement/account"
+          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-md transition cursor-pointer"
+        >
+          <FaHistory className="text-sm" />
+          <span>Wallet History</span>
+        </Link>
+
         {isSuperDarkMode ? (
           <FaSun
             className="text-xl text-black dark:text-adminOffWhite"
