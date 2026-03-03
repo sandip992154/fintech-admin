@@ -6,6 +6,7 @@ import {
   FiUsers,
   FiCheckCircle,
   FiXCircle,
+  FiX,
   FiClock,
   FiEye,
   FiEyeOff,
