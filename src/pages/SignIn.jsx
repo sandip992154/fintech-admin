@@ -73,12 +73,12 @@ export const SignIn = () => {
   const handleDemoLogin = async () => {
     try {
       setLoading(true);
-      setLoginValue("identifier", "superadmin");
-      setLoginValue("password", "SuperAdmin@123");
+      setLoginValue("identifier", "admin");
+      setLoginValue("password", "bandadm000004@123");
 
       const formData = new FormData();
-      formData.append("username", "superadmin");
-      formData.append("password", "SuperAdmin@123");
+      formData.append("username", "admin");
+      formData.append("password", "bandadm000004@123");
 
       const response = await login(formData);
 
