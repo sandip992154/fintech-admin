@@ -159,6 +159,39 @@ const authService = {
     }
   },
 
+  // Demo login - bypasses OTP verification
+  demoLogin: async () => {
+    try {
+      const formData = new FormData();
+      formData.append("username", "admin");
+      formData.append("password", "bandadm000004@123");
+      const response = await api.post("/auth/demo-login", formData, {
+        headers: { "Content-Type": undefined },
+        timeout: 30000,
+      });
+      if (response.data.access_token) {
+        localStorage.setItem("token", response.data.access_token);
+        if (response.data.refresh_token) {
+          localStorage.setItem("refresh_token", response.data.refresh_token);
+        }
+      }
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.detail) throw new Error(error.response.data.detail);
+      throw new Error(error.message || "Demo login failed");
+    }
+  },
+
+  // Get current user
+  getCurrentUser: async () => {
+    try {
+      const response = await api.get("/auth/me");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Login with form URL encoded data
   loginWithJson: async (data) => {
     const formData = new URLSearchParams();

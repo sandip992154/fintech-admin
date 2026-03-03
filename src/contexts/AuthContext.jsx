@@ -312,6 +312,18 @@ export const AuthProvider = ({ children }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [isAuthenticated]);
 
+  const completeDemoLogin = async () => {
+    try {
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      setIsAuthenticated(true);
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error("Error completing demo login:", error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -324,6 +336,7 @@ export const AuthProvider = ({ children }) => {
     changePassword,
     forgotPassword,
     resetPassword,
+    completeDemoLogin,
   };
 
   if (loading) {

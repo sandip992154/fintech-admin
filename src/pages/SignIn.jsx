@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import authService from "../services/authService";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +36,7 @@ export const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
   const [storedCredentials, setStoredCredentials] = useState(null); // Store credentials for OTP resend
-  const { login, verifyOtp, isOtpSent, setIsOtpSent, pendingIdentifier } =
+  const { login, verifyOtp, isOtpSent, setIsOtpSent, pendingIdentifier, completeDemoLogin } =
     useAuth();
   const navigate = useNavigate();
 
@@ -69,29 +70,21 @@ export const SignIn = () => {
     resolver: zodResolver(otpSchema),
   });
 
-  // Fill demo credentials into the form
+  // Demo login - bypasses OTP using /auth/demo-login
   const handleDemoLogin = async () => {
     try {
       setLoading(true);
-      setLoginValue("identifier", "admin");
-      setLoginValue("password", "bandadm000004@123");
-
-      const formData = new FormData();
-      formData.append("username", "admin");
-      formData.append("password", "bandadm000004@123");
-
-      const response = await login(formData);
-
-      if (response?.message?.includes("OTP sent")) {
-        authNotifications.otpSent("email");
-        setOtpTimer(120);
-        resetOtpForm();
-      } else {
-        authNotifications.loginSuccess(response?.user?.name || "Admin");
-      }
+      const response = await authService.demoLogin();
+      await completeDemoLogin();
+      authNotifications.loginSuccess(`Welcome ${response.role || "Admin"}!`);
+      navigate("/");
     } catch (error) {
       console.error("Demo login error:", error);
-      authNotifications.loginError(error.message || "Demo login failed. Please try again.");
+      if (error.message?.includes("Network")) {
+        authNotifications.loginError("Network error: Cannot reach backend.");
+      } else {
+        authNotifications.loginError(error.message || "Demo login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
