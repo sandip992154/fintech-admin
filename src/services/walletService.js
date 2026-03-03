@@ -130,17 +130,18 @@ class WalletService {
 
   /**
    * Get full transaction history (with optional date range)
-   * GET /transactions/history
+   * GET /transactions/wallet/my-transactions
    */
   async getTransactionHistory(startDate = null, endDate = null) {
     try {
-      const params = {};
+      const params = { limit: 100, offset: 0 };
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
-      const response = await apiClient.get("/transactions/history", { params });
+      const response = await apiClient.get("/transactions/wallet/my-transactions", { params });
+      const data = response.data?.data;
       return {
         success: true,
-        data: response.data?.data || response.data || [],
+        data: data?.transactions || [],
         error: null,
       };
     } catch (error) {
@@ -158,8 +159,7 @@ class WalletService {
    * Request a fund load (topup) for a given wallet user
    * POST /transactions/wallet/topup/{userId}
    */
-  async requestFundLoad(userId, amount, remark = "") {
-    try {
+  async requestFundLoad(userId, amount, remark = "") {    try {
       const response = await apiClient.post(
         `/transactions/wallet/topup/${userId}`,
         { amount: Number(amount), remark }
@@ -179,6 +179,64 @@ class WalletService {
         message:
           error.response?.data?.detail ||
           "Failed to submit fund load request. Please contact your SuperAdmin.",
+      };
+    }
+  }
+
+  /**
+   * Transfer funds from current user's wallet to another user
+   * POST /transactions/wallet/transfer/{userId}
+   */
+  async transferFunds(userId, toUserId, amount, remark = "") {
+    try {
+      const response = await apiClient.post(
+        `/transactions/wallet/transfer/${userId}`,
+        { to_user_id: Number(toUserId), amount: Number(amount), remark }
+      );
+      return {
+        success: true,
+        data: response.data,
+        error: null,
+        message: response.data?.message || "Transfer successful!",
+      };
+    } catch (error) {
+      const detail = error.response?.data?.detail;
+      const msg =
+        typeof detail === "object"
+          ? detail?.message || JSON.stringify(detail)
+          : detail || error.message;
+      return {
+        success: false,
+        data: null,
+        error: msg,
+        message: msg || "Transfer failed. Please try again.",
+      };
+    }
+  }
+
+  /**
+   * Get current user's own wallet transactions
+   * GET /transactions/wallet/my-transactions
+   */
+  async getMyTransactions(limit = 20, offset = 0, startDate = null, endDate = null) {
+    try {
+      const params = { limit, offset };
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      const response = await apiClient.get("/transactions/wallet/my-transactions", {
+        params,
+      });
+      return {
+        success: true,
+        data: response.data?.data || response.data || {},
+        error: null,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: {},
+        error: error.response?.data?.detail || error.message,
+        message: error.response?.data?.detail || "Failed to fetch transactions",
       };
     }
   }
