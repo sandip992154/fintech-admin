@@ -7,7 +7,7 @@ services:
     pullRequestPreviewsEnabled: false
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://backend.bandarupay.pro/api/v1
+        value: https://fintech-backend-f9vu.onrender.com/api/v1
       - key: VITE_DEV_MODE
         value: false
     routes:
