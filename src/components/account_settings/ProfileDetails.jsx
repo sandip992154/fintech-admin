@@ -45,7 +45,7 @@ const ProfileDetails = ({
       formData.append("file", file);
 
       const response = await apiClient.post(
-        "/api/v1/profile/upload-photo",
+        "/profile/upload-photo",
         formData,
         {
           headers: {

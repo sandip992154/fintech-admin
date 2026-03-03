@@ -39,7 +39,7 @@ const PinManager = ({ initialData, onSubmit, loading = false }) => {
   const handleSendOtp = async () => {
     setSendingOtp(true);
     try {
-      const response = await apiClient.post("/api/v1/profile/otp/generate", {
+      const response = await apiClient.post("/profile/otp/generate", {
         purpose: "pin_change",
       });
 

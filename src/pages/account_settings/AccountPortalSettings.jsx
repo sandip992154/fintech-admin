@@ -18,6 +18,10 @@ const AccountPortalSettings = () => {
   const {
     profileData,
     bankDetails,
+    kycDetails,
+    certificateData,
+    roleData,
+    mappingData,
     profileStatus,
     loading,
     error,
@@ -26,6 +30,10 @@ const AccountPortalSettings = () => {
     updateBankDetails,
     updatePassword,
     updateMPIN,
+    updateKYCDetails,
+    updateCertificateManager,
+    updateRoleManager,
+    updateMappingManager,
     isSectionAvailable,
     clearError,
     refreshProfile,
@@ -64,10 +72,10 @@ const AccountPortalSettings = () => {
   const defaultData = {
     Profile_Details: getFormattedProfileData(),
     KYC_Profile: {
-      shopName: "",
-      gstNumber: "",
-      aadharNumber: "",
-      panNumber: "",
+      shopName: kycDetails?.shop_name || "",
+      gstNumber: kycDetails?.gst_number || "",
+      aadharNumber: kycDetails?.aadhar_number || "",
+      panNumber: kycDetails?.pan_number || "",
       securityPin: "",
       passportPhoto: "",
     },
@@ -83,22 +91,23 @@ const AccountPortalSettings = () => {
       otp: "",
     },
     Bank_Details: {
-      accountNumber: bankDetails?.accountNumber || "",
-      bankName: bankDetails?.bankName || "",
-      ifscCode: bankDetails?.ifscCode || "",
-      accountHolderName: bankDetails?.accountHolderName || "",
+      accountNumber: bankDetails?.accountNumber || bankDetails?.account_number || "",
+      bankName: bankDetails?.bankName || bankDetails?.bank_name || "",
+      ifscCode: bankDetails?.ifscCode || bankDetails?.ifsc_code || "",
+      accountHolderName: bankDetails?.accountHolderName || bankDetails?.account_holder_name || "",
       securityPin: "",
     },
     Certificate_Manager: {
-      cmo: "",
-      coo: "",
+      cmo: certificateData?.cmo || "",
+      coo: certificateData?.coo || "",
+      securityPin: "",
     },
     Role_Manager: {
-      membersRole: "",
+      memberRole: roleData?.member_role || "",
       securityPin: "",
     },
     Mapping_Manager: {
-      parentMember: "",
+      parentMember: mappingData?.parent_member || "",
       securityPin: "",
     },
   };
@@ -154,6 +163,50 @@ const AccountPortalSettings = () => {
     return result;
   };
 
+  const handleKYCUpdate = async (data) => {
+    clearError();
+    const result = await updateKYCDetails(data);
+    if (result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(`Error: ${result.message}`);
+    }
+    return result;
+  };
+
+  const handleCertificateUpdate = async (data) => {
+    clearError();
+    const result = await updateCertificateManager(data);
+    if (result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(`Error: ${result.message}`);
+    }
+    return result;
+  };
+
+  const handleRoleUpdate = async (data) => {
+    clearError();
+    const result = await updateRoleManager(data);
+    if (result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(`Error: ${result.message}`);
+    }
+    return result;
+  };
+
+  const handleMappingUpdate = async (data) => {
+    clearError();
+    const result = await updateMappingManager(data);
+    if (result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(`Error: ${result.message}`);
+    }
+    return result;
+  };
+
   const renderPageContent = () => {
     if (loading) {
       return (
@@ -178,6 +231,7 @@ const AccountPortalSettings = () => {
         return (
           <KYCDetails
             initialData={defaultData.KYC_Profile}
+            onSubmit={handleKYCUpdate}
             loading={saveLoading}
             error={error}
           />
@@ -213,6 +267,7 @@ const AccountPortalSettings = () => {
         return (
           <CertificateManager
             initialData={defaultData.Certificate_Manager}
+            onSubmit={handleCertificateUpdate}
             loading={saveLoading}
             error={error}
           />
@@ -221,6 +276,7 @@ const AccountPortalSettings = () => {
         return (
           <RoleManager
             initialData={defaultData.Role_Manager}
+            onSubmit={handleRoleUpdate}
             loading={saveLoading}
             error={error}
           />
@@ -229,6 +285,7 @@ const AccountPortalSettings = () => {
         return (
           <MappingManager
             initialData={defaultData.Mapping_Manager}
+            onSubmit={handleMappingUpdate}
             loading={saveLoading}
             error={error}
           />
