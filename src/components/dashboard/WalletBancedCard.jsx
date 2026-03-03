@@ -1,12 +1,36 @@
-import { curve } from "../../assets/assets";
+import { useEffect, useState } from "react";
+import walletService from "../../services/walletService";
 
 const WalletBalanceCard = () => {
+  const [balance, setBalance] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      setLoading(true);
+      const result = await walletService.getMyWalletBalance();
+      if (result.success) {
+        setBalance(result.data?.balance ?? 0);
+      } else {
+        setBalance(null);
+      }
+      setLoading(false);
+    };
+    fetchBalance();
+  }, []);
+
+  const displayBalance = loading
+    ? "Loading..."
+    : balance !== null
+    ? walletService.formatBalance(balance)
+    : "N/A";
+
   return (
     <div className="relative bg-gradient-to-r from-[#1C72B9] to-[#4392C0] text-white rounded-md overflow-hidden shadow-md p-4 h-32 w-full flex flex-col justify-center">
       {/* Text content */}
       <div className="z-10">
-        <div className="text-2xl font-bold">12800000</div>
-        <div className="text-sm">Maha wallet Balance</div>
+        <div className="text-2xl font-bold">{displayBalance}</div>
+        <div className="text-sm">Main Wallet Balance</div>
       </div>
 
       {/* SVG Curve Overlay */}

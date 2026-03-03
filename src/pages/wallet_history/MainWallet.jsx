@@ -1,80 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PaginatedTable from "../../components/utility/PaginatedTable";
 import FilterBar from "../../components/utility/FilterBar";
 import ExcelExportButton from "../../components/utility/ExcelExportButton";
+import walletService from "../../services/walletService";
 
 export const MainWallet = () => {
-  const Data = [];
+  const [allData, setAllData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     fromDate: "",
     toDate: "",
     searchValue: "",
-    userId: "",
-    status: "",
-    product: "",
   });
-  const [filteredData, setFilteredData] = useState([...Data]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // ✅ Generic input handler
+  const fetchTransactions = useCallback(async (fromDate, toDate) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await walletService.getTransactionHistory(
+        fromDate || null,
+        toDate || null
+      );
+      if (result.success) {
+        const rows = Array.isArray(result.data)
+          ? result.data
+          : result.data?.transactions || [];
+        setAllData(rows);
+        setFilteredData(rows);
+      } else {
+        setError(result.message || "Failed to load transactions.");
+        setAllData([]);
+        setFilteredData([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions("", "");
+  }, [fetchTransactions]);
+
   const handleInputChange = (name, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // filters function
   const applyFilters = () => {
-    let data = [...Data];
-
-    // Filter by Search: requestedBy.name or mobile
-    if (filters.searchValue) {
-      const term = filters.searchValue.toLowerCase();
-      data = data.filter(
-        (d) =>
-          d.requestedBy.name.toLowerCase().includes(term) ||
-          d.requestedBy.mobile.includes(term)
-      );
-    }
-
-    // Filter by User ID (exact match)
-    if (filters.userId) {
-      data = data.filter((d) => String(d.id) === String(filters.userId));
-    }
-
-    // Filter by Status (action)
-    if (filters.status) {
-      data = data.filter(
-        (d) => d.action.toLowerCase() === filters.status.toLowerCase()
-      );
-    }
-
-    // Filter by Product (assumed product info is in remark field or depositDetails.bankName)
-    if (filters.product) {
-      const term = filters.product.toLowerCase();
-      data = data.filter(
-        (d) =>
-          d.remark.toLowerCase().includes(term) || // if you're using remark to store product info
-          d.depositDetails.bankName.toLowerCase().includes(term) // optional based on assumption
-      );
-    }
-
-    // Filter by From and To Date (on referenceDetails.dateTime)
-    if (filters.fromDate || filters.toDate) {
-      data = data.filter((d) => {
-        const entryDate = new Date(d.referenceDetails.dateTime);
-        const fromDate = filters.fromDate ? new Date(filters.fromDate) : null;
-        const toDate = filters.toDate ? new Date(filters.toDate) : null;
-
-        if (fromDate && entryDate < fromDate) return false;
-        if (toDate && entryDate > toDate) return false;
-        return true;
-      });
-    }
-    setFilteredData(data);
+    fetchTransactions(filters.fromDate, filters.toDate);
     setCurrentPage(1);
+  };
+
+  const handleRefresh = () => {
+    fetchTransactions(filters.fromDate, filters.toDate);
   };
 
   const fields = [
@@ -95,143 +76,173 @@ export const MainWallet = () => {
     {
       name: "searchValue",
       type: "text",
-      placeholder: "Search Value",
+      placeholder: "Search Ref ID / Remark",
       value: filters.searchValue || "",
-      onChange: (val) => handleInputChange("searchValue", val),
-    },
-    {
-      name: "userId",
-      type: "text",
-      placeholder: "Agent/Parent",
-      value: filters.userId || "",
-      onChange: (val) => handleInputChange("userId", val),
+      onChange: (val) => {
+        handleInputChange("searchValue", val);
+        if (!val) {
+          setFilteredData(allData);
+        } else {
+          const term = val.toLowerCase();
+          setFilteredData(
+            allData.filter(
+              (d) =>
+                String(d.reference_id || "").toLowerCase().includes(term) ||
+                String(d.remark || "").toLowerCase().includes(term) ||
+                String(d.description || "").toLowerCase().includes(term) ||
+                String(d.transaction_type || d.type || "").toLowerCase().includes(term)
+            )
+          );
+          setCurrentPage(1);
+        }
+      },
     },
   ];
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatAmount = (amount) => {
+    if (amount === null || amount === undefined) return "—";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount);
+  };
+
   const columns = [
-    { header: "#", accessor: "id" },
     {
-      header: "Refrences Details",
-      accessor: "requestedBy",
+      header: "#",
+      accessor: "id",
+      render: (row, idx) => (currentPage - 1) * pageSize + idx + 1,
+    },
+    {
+      header: "Date & Time",
+      accessor: "created_at",
+      render: (row) => <span className="whitespace-nowrap">{formatDate(row.created_at)}</span>,
+    },
+    {
+      header: "Reference ID",
+      accessor: "reference_id",
       render: (row) => (
-        <div>
-          <p>{row.requestedBy.name}</p>
-          <p>{row.requestedBy.mobile}</p>
-          <p>{row.requestedBy.role}</p>
-        </div>
+        <span className="font-mono text-xs">{row.reference_id || "—"}</span>
       ),
     },
     {
-      header: "Product",
-      accessor: "depositDetails",
+      header: "Transaction Type",
+      accessor: "transaction_type",
+      render: (row) => {
+        const type = (row.transaction_type || row.type || "").toLowerCase();
+        return (
+          <span
+            className={`px-2 py-1 rounded text-xs font-semibold ${
+              type === "credit"
+                ? "bg-green-100 text-green-700"
+                : type === "debit"
+                ? "bg-red-100 text-red-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {(row.transaction_type || row.type || "—").toUpperCase()}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Remark / Description",
+      accessor: "remark",
       render: (row) => (
-        <div>
-          <p>{row.depositDetails.bankName}</p>
-          <p>{row.depositDetails.accountNo}</p>
-          <p>{row.depositDetails.ifsc}</p>
-        </div>
+        <span className="text-xs">{row.remark || row.description || "—"}</span>
       ),
-    },
-    {
-      header: "Provider",
-      accessor: "referenceDetails",
-      render: (row) => (
-        <div>
-          <p>{row.referenceDetails.transactionId}</p>
-          <p>{row.referenceDetails.dateTime}</p>
-        </div>
-      ),
-    },
-    {
-      header: "Txnid",
-      accessor: "remark",
-    },
-    {
-      header: "Order ID",
-      accessor: "remark",
-    },
-    {
-      header: "Number",
-      accessor: "remark",
-    },
-    {
-      header: "ST_Type / TXN_Type",
-      accessor: "remark",
     },
     {
       header: "Status",
-      accessor: "remark",
+      accessor: "status",
+      render: (row) => {
+        const status = (row.status || "").toLowerCase();
+        return (
+          <span
+            className={`px-2 py-1 rounded text-xs font-semibold ${
+              status === "success" || status === "completed"
+                ? "bg-green-100 text-green-700"
+                : status === "failed"
+                ? "bg-red-100 text-red-700"
+                : status === "pending"
+                ? "bg-yellow-100 text-yellow-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {row.status || "—"}
+          </span>
+        );
+      },
     },
     {
       header: "Opening Bal.",
-      accessor: "remark",
+      accessor: "balance_before",
+      render: (row) => formatAmount(row.balance_before),
     },
     {
       header: "Amount",
-      accessor: "remark",
-    },
-    {
-      header: "Charge",
-      accessor: "action",
-    },
-    {
-      header: "Commission/Profit",
-      accessor: "remark",
+      accessor: "amount",
+      render: (row) => (
+        <span
+          className={
+            (row.transaction_type || row.type || "").toLowerCase() === "debit"
+              ? "text-red-600 font-semibold"
+              : "text-green-600 font-semibold"
+          }
+        >
+          {formatAmount(row.amount)}
+        </span>
+      ),
     },
     {
       header: "Closing Bal.",
-      accessor: "action",
+      accessor: "balance_after",
+      render: (row) => formatAmount(row.balance_after),
     },
   ];
 
-  const handleExport = () => {
-    const exportData = filteredData.map((item) => ({
-      "#": item.id || "N/A",
-
-      // Refrences Details
-      "Requested By": item.requestedBy?.name || "N/A",
-      "Requester Mobile": item.requestedBy?.mobile || "N/A",
-      "Requester Role": item.requestedBy?.role || "N/A",
-
-      // Product Details
-      "Bank Name": item.depositDetails?.bankName || "N/A",
-      "Account No": item.depositDetails?.accountNo || "N/A",
-      IFSC: item.depositDetails?.ifsc || "N/A",
-
-      // Provider
-      "Transaction ID": item.referenceDetails?.transactionId || "N/A",
-      "Transaction Date": item.referenceDetails?.dateTime || "N/A",
-
-      // Repeated Remark Fields
-      Txnid: item.remark || "N/A",
-      "Order ID": item.remark || "N/A",
-      Number: item.remark || "N/A",
-      "ST_Type / TXN_Type": item.remark || "N/A",
-      Status: item.remark || "N/A",
-      "Opening Bal.": item.remark || "N/A",
-      Amount: item.remark || "N/A",
-      Charge: item.action || "N/A",
-      "Commission/Profit": item.remark || "N/A",
-      "Closing Bal.": item.action || "N/A",
+  const handleExport = () =>
+    filteredData.map((item, idx) => ({
+      "#": idx + 1,
+      "Date & Time": formatDate(item.created_at),
+      "Reference ID": item.reference_id || "N/A",
+      "Transaction Type": item.transaction_type || item.type || "N/A",
+      "Remark / Description": item.remark || item.description || "N/A",
+      Status: item.status || "N/A",
+      "Opening Balance": item.balance_before ?? "N/A",
+      Amount: item.amount ?? "N/A",
+      "Closing Balance": item.balance_after ?? "N/A",
     }));
-
-    return exportData;
-  };
 
   return (
     <div className="h-[90vh] 2xl:max-w-[80%] p-4 mx-8 bg-secondaryOne dark:bg-darkBlue/70 rounded-2xl 2xl:mx-auto text-gray-800 overflow-hidden overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
       <div className="my-4 p-4 rounded-md bg-white dark:bg-transparent">
-        <div className=" flex gap-3 justify-between">
+        <div className="flex gap-3 justify-between">
           <h2 className="text-2xl font-bold dark:text-adminOffWhite">
             Account Statement
           </h2>
-          <div className="">
-            <button className="btn-24 text-adminOffWhite bg-accentRed ">
-              Refresh
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="btn-24 text-adminOffWhite bg-accentRed disabled:opacity-60"
+            >
+              {loading ? "Loading..." : "Refresh"}
             </button>
             <ExcelExportButton
               buttonLabel="Export"
-              fileName="verification-statement.xlsx"
+              fileName="account-statement.xlsx"
               data={handleExport()}
             />
           </div>
@@ -239,15 +250,30 @@ export const MainWallet = () => {
         <FilterBar fields={fields} onSearch={applyFilters} />
       </div>
 
-      <PaginatedTable
-        data={filteredData}
-        filters={filters}
-        onSearch={applyFilters}
-        columns={columns}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        pageSize={pageSize}
-      />
+      {error && (
+        <div className="mx-4 mb-4 px-4 py-3 rounded bg-red-100 text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center items-center py-12 text-gray-500">
+          Loading transactions...
+        </div>
+      )}
+
+      {!loading && (
+        <PaginatedTable
+          data={filteredData}
+          filters={filters}
+          onSearch={applyFilters}
+          columns={columns}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+        />
+      )}
     </div>
   );
 };
+
