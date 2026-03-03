@@ -8,7 +8,9 @@ if (import.meta.env.PROD && BASE_URL.startsWith("http://")) {
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  // withCredentials is NOT needed - auth uses Bearer token in headers (localStorage), not cookies
+  // Setting it true causes strict CORS preflight failures in production
+  withCredentials: false,
   headers: {
     "Content-Type": "application/json",
   },

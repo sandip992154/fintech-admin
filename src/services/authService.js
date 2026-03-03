@@ -9,8 +9,9 @@ if (import.meta.env.PROD && BASE_URL.startsWith("http://")) {
 // Create API instance with default config
 const api = axios.create({
   baseURL: BASE_URL,
-  // timeout: 20000,
-  withCredentials: true,
+  // withCredentials is NOT needed - auth uses Bearer token in headers (localStorage), not cookies
+  // Setting it true causes strict CORS preflight failures in production
+  withCredentials: false,
   headers: {
     "Content-Type": "application/json",
   },
