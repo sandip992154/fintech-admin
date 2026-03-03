@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+// In production always enforce HTTPS regardless of what the env variable says
+let BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+if (import.meta.env.PROD && BASE_URL.startsWith("http://")) {
+  BASE_URL = BASE_URL.replace("http://", "https://");
+}
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
