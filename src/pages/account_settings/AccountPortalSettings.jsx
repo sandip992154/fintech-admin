@@ -252,6 +252,7 @@ const AccountPortalSettings = () => {
             onSubmit={handleMPINUpdate}
             loading={saveLoading}
             error={error}
+            mpinIsSet={profileStatus?.mpin_is_set === true}
           />
         );
       case "Bank Details":

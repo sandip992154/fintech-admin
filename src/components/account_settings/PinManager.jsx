@@ -21,7 +21,7 @@ const schema = yup.object().shape({
     .required("OTP is required"),
 });
 
-const PinManager = ({ initialData, onSubmit, loading = false }) => {
+const PinManager = ({ initialData, onSubmit, loading = false, mpinIsSet = false }) => {
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -36,11 +36,13 @@ const PinManager = ({ initialData, onSubmit, loading = false }) => {
     resolver: yupResolver(schema),
   });
 
+  const otpPurpose = mpinIsSet ? "pin_change" : "pin_setup";
+
   const handleSendOtp = async () => {
     setSendingOtp(true);
     try {
       const response = await apiClient.post("/profile/otp/generate", {
-        purpose: "pin_change",
+        purpose: otpPurpose,
       });
 
       toast.success(response.data.message);
@@ -83,7 +85,7 @@ const PinManager = ({ initialData, onSubmit, loading = false }) => {
         <input
           type="password"
           inputMode="numeric"
-          maxLength="4"
+          maxLength="6"
           {...register("newPin")}
           className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
         />
@@ -96,7 +98,7 @@ const PinManager = ({ initialData, onSubmit, loading = false }) => {
         <input
           type="password"
           inputMode="numeric"
-          maxLength="4"
+          maxLength="6"
           {...register("confirmPin")}
           className="w-full px-3 py-2 rounded  dark:text-white border border-gray-600"
         />
@@ -140,7 +142,9 @@ const PinManager = ({ initialData, onSubmit, loading = false }) => {
             ? "Processing..."
             : otpVerified
             ? "PIN Updated!"
-            : "Reset PIN"}
+            : mpinIsSet
+            ? "Update PIN"
+            : "Setup PIN"}
         </button>
 
         {!otpSent && (
